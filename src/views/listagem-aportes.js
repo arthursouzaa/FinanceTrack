@@ -16,17 +16,17 @@ import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
-const baseURL = `${BASE_URL}/MetaFinanceira`;
+const baseURL = `${BASE_URL}/Aporte`;
 
-function ListagemMetas() {
+function ListagemAportes() {
   const navigate = useNavigate();
 
   const cadastrar = () => {
-    navigate(`/cadastro-metas`);
+    navigate(`/cadastro-aportes`);
   };
 
   const editar = (id) => {
-    navigate(`/cadastro-metas/${id}`);
+    navigate(`/cadastro-aportes/${id}`);
   };
 
   const [dados, setDados] = React.useState(null);
@@ -40,7 +40,7 @@ function ListagemMetas() {
         headers: { 'Content-Type': 'application/json' },
       })
       .then(function (response) {
-        mensagemSucesso(`Meta excluída com sucesso!`);
+        mensagemSucesso(`Aporte excluído com sucesso!`);
         setDados(
           dados.filter((dado) => {
             return dado.id !== id;
@@ -48,7 +48,7 @@ function ListagemMetas() {
         );
       })
       .catch(function (error) {
-        mensagemErro(`Erro ao excluir a meta`);
+        mensagemErro(`Erro ao excluir o aporte`);
       });
   }
 
@@ -62,7 +62,7 @@ function ListagemMetas() {
 
   return (
     <div className='container'>
-      <Card title='Listagem de Metas'>
+      <Card title='Listagem de Aportes'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
@@ -71,26 +71,21 @@ function ListagemMetas() {
                 className='btn btn-warning'
                 onClick={() => cadastrar()}
               >
-                Novo Meta
+                Novo Aporte
               </button>
               <table className='table table-hover'>
                 <thead>
                   <tr>
-                    <th scope='col'>Nome</th>
-                    <th scope='col'>Valor-Alvo</th>
-                    <th scope='col'>Data-Alvo</th>
-                    <th scope='col'>Total Investido</th>
+                    <th scope='col'>Valor</th>
+                    <th scope='col'>Investimento</th>
                     <th scope='col' colSpan={2}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dados.map((dado) => (
                     <tr key={dado.id}>
-                      <td>{dado.nome}</td>
                       <td>{dado.valor}</td>
-                      <td>{dado.dataAlvo}</td>
-                    {/* Trocar por total investido:  */}
-                      <td>{dado.investimentoInicial}</td> 
+                      <td>{dado.investimento}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
@@ -119,4 +114,4 @@ function ListagemMetas() {
   );
 }
 
-export default ListagemMetas;
+export default ListagemAportes;

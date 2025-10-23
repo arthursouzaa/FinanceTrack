@@ -12,18 +12,15 @@ import '../custom.css';
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
-function CadastroMeta() {
+function CadastroFormaPagamento() {
   const { idParam } = useParams();
 
   const navigate = useNavigate();
 
-  const baseURL = `${BASE_URL}/MetaFinanceira`;
+  const baseURL = `${BASE_URL}/FormaPagamento`;
 
   const [id, setId] = useState('');
   const [nome, setNome] = useState('');
-  const [valor, setValor] = useState('');
-  const [dataAlvo, setDataAlvo] = useState('');
-  const [investimentoInicial, setInvestimentoInicial] = useState('');
 
   const [dados, setDados] = React.useState([]);
 
@@ -31,20 +28,14 @@ function CadastroMeta() {
     if (idParam == null) {
       setId('');
       setNome('');
-      setValor('');
-      setDataAlvo('');
-      setInvestimentoInicial('');
     } else {
       setId(dados.id);
       setNome(dados.nome);
-      setValor(dados.valor);
-      setDataAlvo(dados.dataAlvo);
-      setInvestimentoInicial(dados.investimentoInicial);
     }
   }
 
   async function salvar() {
-    let data = { id, nome, valor, dataAlvo, investimentoInicial };
+    let data = { id, nome };
     data = JSON.stringify(data);
     if (idParam == null) {
       await axios
@@ -52,8 +43,8 @@ function CadastroMeta() {
           headers: { 'Content-Type': 'application/json' },
         })
         .then(function (response) {
-          mensagemSucesso(`Meta ${nome} cadastrado com sucesso!`);
-          navigate(`/listagem-metas`);
+          mensagemSucesso(`Forma de pagamento ${nome} cadastrada com sucesso!`);
+          navigate(`/listagem-formasPagamento`);
         })
         .catch(function (error) {
           mensagemErro(error.response.data);
@@ -64,8 +55,8 @@ function CadastroMeta() {
           headers: { 'Content-Type': 'application/json' },
         })
         .then(function (response) {
-          mensagemSucesso(`Meta ${nome} alterado com sucesso!`);
-          navigate(`/listagem-meta`);
+          mensagemSucesso(`Forma de pagamento ${nome} alterada com sucesso!`);
+          navigate(`/listagem-formasPagamento`);
         })
         .catch(function (error) {
           mensagemErro(error.response.data);
@@ -79,14 +70,11 @@ function CadastroMeta() {
     });
     setId(dados.id);
     setNome(dados.nome);
-    setValor(dados.valor);
-    setDataAlvo(dados.dataAlvo);
-    setInvestimentoInicial(dados.investimentoInicial);
   }
 
     return (
     <div className='container'>
-      <Card title='Cadastro de Meta'>
+      <Card title='Cadastro de Forma de Pagamento'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
@@ -98,36 +86,6 @@ function CadastroMeta() {
                   className='form-control'
                   name='nome'
                   onChange={(e) => setNome(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup label='Valor: *' htmlFor='inputValor'>
-                <input
-                  type='text'
-                  id='inputValor'
-                  value={valor}
-                  className='form-control'
-                  name='valor'
-                  onChange={(e) => setValor(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup label='DataAlvo: *' htmlFor='inputDataAlvo'>
-                <input
-                  type='date'
-                  id='inputDataAlvo'
-                  value={dataAlvo}
-                  className='form-control'
-                  name='dataAlvo'
-                  onChange={(e) => setDataAlvo(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup label='InvestimentoInicial:' htmlFor='inputInvestimentoInicial'>
-                <input
-                  type='text'
-                  id='inputInvestimentoIni'
-                  value={investimentoInicial}
-                  className='form-control'
-                  name='investimentoInicial'
-                  onChange={(e) => setInvestimentoInicial(e.target.value)}
                 />
               </FormGroup>
               <Stack spacing={1} padding={1} direction='row'>
@@ -154,4 +112,4 @@ function CadastroMeta() {
   );
 }
 
-export default CadastroMeta;
+export default CadastroFormaPagamento;

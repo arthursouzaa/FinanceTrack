@@ -12,39 +12,33 @@ import '../custom.css';
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
-function CadastroMeta() {
+function CadastroAporte() {
   const { idParam } = useParams();
 
   const navigate = useNavigate();
 
-  const baseURL = `${BASE_URL}/MetaFinanceira`;
+  const baseURL = `${BASE_URL}/Aporte`;
 
   const [id, setId] = useState('');
-  const [nome, setNome] = useState('');
   const [valor, setValor] = useState('');
-  const [dataAlvo, setDataAlvo] = useState('');
-  const [investimentoInicial, setInvestimentoInicial] = useState('');
+  const [idMeta, setIdMeta] = useState('');
 
   const [dados, setDados] = React.useState([]);
 
   function inicializar() {
     if (idParam == null) {
       setId('');
-      setNome('');
       setValor('');
-      setDataAlvo('');
-      setInvestimentoInicial('');
+      setIdMeta('');
     } else {
       setId(dados.id);
-      setNome(dados.nome);
       setValor(dados.valor);
-      setDataAlvo(dados.dataAlvo);
-      setInvestimentoInicial(dados.investimentoInicial);
+      setIdMeta(dados.idMeta);
     }
   }
 
   async function salvar() {
-    let data = { id, nome, valor, dataAlvo, investimentoInicial };
+    let data = { id, valor, idMeta };
     data = JSON.stringify(data);
     if (idParam == null) {
       await axios
@@ -52,8 +46,8 @@ function CadastroMeta() {
           headers: { 'Content-Type': 'application/json' },
         })
         .then(function (response) {
-          mensagemSucesso(`Meta ${nome} cadastrado com sucesso!`);
-          navigate(`/listagem-metas`);
+          mensagemSucesso(`Aporte cadastrado com sucesso!`);
+          navigate(`/listagem-aporte`);
         })
         .catch(function (error) {
           mensagemErro(error.response.data);
@@ -64,8 +58,8 @@ function CadastroMeta() {
           headers: { 'Content-Type': 'application/json' },
         })
         .then(function (response) {
-          mensagemSucesso(`Meta ${nome} alterado com sucesso!`);
-          navigate(`/listagem-meta`);
+          mensagemSucesso(`Aporte alterado com sucesso!`);
+          navigate(`/listagem-aporte`);
         })
         .catch(function (error) {
           mensagemErro(error.response.data);
@@ -78,28 +72,31 @@ function CadastroMeta() {
       setDados(response.data);
     });
     setId(dados.id);
-    setNome(dados.nome);
     setValor(dados.valor);
-    setDataAlvo(dados.dataAlvo);
-    setInvestimentoInicial(dados.investimentoInicial);
+    setIdMeta(dados.idMeta);
   }
 
-    return (
+  const [dadosMetas, setDadosMetas] = React.useState(null);
+
+  useEffect(() => {
+    axios.get(`${BASE_URL}/metas`).then((response) => {
+      setDadosMetas(response.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    buscar(); // eslint-disable-next-line
+  }, [id]);
+
+  if (!dados) return null;
+  if (!dadosMetas) return null;
+
+  return (
     <div className='container'>
-      <Card title='Cadastro de Meta'>
+      <Card title='Cadastro de Aporte'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <FormGroup label='Nome: *' htmlFor='inputNome'>
-                <input
-                  type='text'
-                  id='inputNome'
-                  value={nome}
-                  className='form-control'
-                  name='nome'
-                  onChange={(e) => setNome(e.target.value)}
-                />
-              </FormGroup>
               <FormGroup label='Valor: *' htmlFor='inputValor'>
                 <input
                   type='text'
@@ -110,25 +107,23 @@ function CadastroMeta() {
                   onChange={(e) => setValor(e.target.value)}
                 />
               </FormGroup>
-              <FormGroup label='DataAlvo: *' htmlFor='inputDataAlvo'>
-                <input
-                  type='date'
-                  id='inputDataAlvo'
-                  value={dataAlvo}
-                  className='form-control'
-                  name='dataAlvo'
-                  onChange={(e) => setDataAlvo(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup label='InvestimentoInicial:' htmlFor='inputInvestimentoInicial'>
-                <input
-                  type='text'
-                  id='inputInvestimentoIni'
-                  value={investimentoInicial}
-                  className='form-control'
-                  name='investimentoInicial'
-                  onChange={(e) => setInvestimentoInicial(e.target.value)}
-                />
+              <FormGroup label='Meta: *' htmlFor='selectMeta'>
+                <select
+                  className='form-select'
+                  id='selectMeta'
+                  name='idMeta'
+                  value={idMeta}
+                  onChange={(e) => setIdMeta(e.target.value)}
+                >
+                  <option key='0' value='0'>
+                    {' '}
+                  </option>
+                  {dadosMetas.map((dado) => (
+                    <option key={dado.id} value={dado.id}>
+                      {dado.nome}
+                    </option>
+                  ))}
+                </select>
               </FormGroup>
               <Stack spacing={1} padding={1} direction='row'>
                 <button
@@ -154,4 +149,4 @@ function CadastroMeta() {
   );
 }
 
-export default CadastroMeta;
+export default CadastroAporte;

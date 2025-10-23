@@ -1,8 +1,8 @@
 import React from 'react';
 
 import ListagemMetas from './views/listagem-metas';
-// import ListagemCursos from './views/listagem-cursos';
-// import ListagemProfessores from './views/listagem-professores';
+import ListagemAportes from './views/listagem-aportes';
+import ListagemFormasPagamento from './views/listagem-formasPagamento';
 // import ListagemAlunos from './views/listagem-alunos';
 // import ListagemCategorias from './views/listagem-categorias';
 // import ListagemAtividadesComplementares from './views/listagem-atividades-complementares';
@@ -10,8 +10,8 @@ import ListagemMetas from './views/listagem-metas';
 
 // import Login from './views/login';
 import CadastroMeta from './views/cadastro-metas';
-// import CadastroCurso from './views/cadastro-curso';
-// import CadastroProfessor from './views/cadastro-professor';
+import CadastroAporte from './views/cadastro-aportes';
+import CadastroFormasPagamento from './views/cadastro-formasPagamento';
 // import CadastroAluno from './views/cadastro-aluno';
 // import CadastroCategoria from './views/cadastro-categoria';
 // import CadastroAtividadeComplementar from './views/cadastro-atividade-complementar';
@@ -27,12 +27,12 @@ function Rotas(props) {
           path='/cadastro-metas/:idParam?'
           element={<CadastroMeta />}
         />
-        {/* <Route path='/cadastro-cursos/:idParam?' element={<CadastroCurso />} />
+        <Route path='/cadastro-aportes/:idParam?' element={<CadastroAporte />} />
         <Route
-          path='/cadastro-professores/:idParam?'
-          element={<CadastroProfessor />}
+          path='/cadastro-formasPagamento/:idParam?'
+          element={<CadastroFormasPagamento />}
         />
-        <Route path='/cadastro-alunos/:idParam?' element={<CadastroAluno />} />
+        {/* <Route path='/cadastro-alunos/:idParam?' element={<CadastroAluno />} />
         <Route
           path='/cadastro-categorias/:idParam?'
           element={<CadastroCategoria />}
@@ -42,9 +42,9 @@ function Rotas(props) {
           element={<CadastroAtividadeComplementar />}
         /> */}
         <Route path='/listagem-metas' element={<ListagemMetas />} />
-        {/* <Route path='/listagem-cursos' element={<ListagemCursos />} />
-        <Route path='/listagem-professores' element={<ListagemProfessores />} />
-        <Route path='/listagem-alunos' element={<ListagemAlunos />} />
+        <Route path='/listagem-aportes' element={<ListagemAportes />} />
+        <Route path='/listagem-formasPagamento' element={<ListagemFormasPagamento />} />
+        {/* <Route path='/listagem-alunos' element={<ListagemAlunos />} />
         <Route path='/listagem-categorias' element={<ListagemCategorias />} />
         <Route
           path='/listagem-atividades-complementares'

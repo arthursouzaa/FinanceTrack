@@ -16,17 +16,17 @@ import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
-const baseURL = `${BASE_URL}/MetaFinanceira`;
+const baseURL = `${BASE_URL}/FormaPagamento`;
 
-function ListagemMetas() {
+function ListagemFormasPagamento() {
   const navigate = useNavigate();
 
   const cadastrar = () => {
-    navigate(`/cadastro-metas`);
+    navigate(`/cadastro-formasPagamento`);
   };
 
   const editar = (id) => {
-    navigate(`/cadastro-metas/${id}`);
+    navigate(`/cadastro-formasPagamento/${id}`);
   };
 
   const [dados, setDados] = React.useState(null);
@@ -40,7 +40,7 @@ function ListagemMetas() {
         headers: { 'Content-Type': 'application/json' },
       })
       .then(function (response) {
-        mensagemSucesso(`Meta excluída com sucesso!`);
+        mensagemSucesso(`Forma de pagamento excluída com sucesso!`);
         setDados(
           dados.filter((dado) => {
             return dado.id !== id;
@@ -48,7 +48,7 @@ function ListagemMetas() {
         );
       })
       .catch(function (error) {
-        mensagemErro(`Erro ao excluir a meta`);
+        mensagemErro(`Erro ao excluir a forma de pagamento`);
       });
   }
 
@@ -62,7 +62,7 @@ function ListagemMetas() {
 
   return (
     <div className='container'>
-      <Card title='Listagem de Metas'>
+      <Card title='Listagem de Formas de Pagamento'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
@@ -77,9 +77,6 @@ function ListagemMetas() {
                 <thead>
                   <tr>
                     <th scope='col'>Nome</th>
-                    <th scope='col'>Valor-Alvo</th>
-                    <th scope='col'>Data-Alvo</th>
-                    <th scope='col'>Total Investido</th>
                     <th scope='col' colSpan={2}>Ações</th>
                   </tr>
                 </thead>
@@ -87,10 +84,6 @@ function ListagemMetas() {
                   {dados.map((dado) => (
                     <tr key={dado.id}>
                       <td>{dado.nome}</td>
-                      <td>{dado.valor}</td>
-                      <td>{dado.dataAlvo}</td>
-                    {/* Trocar por total investido:  */}
-                      <td>{dado.investimentoInicial}</td> 
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
@@ -119,4 +112,4 @@ function ListagemMetas() {
   );
 }
 
-export default ListagemMetas;
+export default ListagemFormasPagamento;
