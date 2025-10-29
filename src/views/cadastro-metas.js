@@ -100,7 +100,7 @@ function CadastroMeta() {
                   onChange={(e) => setNome(e.target.value)}
                 />
               </FormGroup>
-              <FormGroup label='Valor: *' htmlFor='inputValor'>
+              <FormGroup label='Valor-Alvo: *' htmlFor='inputValor'>
                 <input
                   type='text'
                   id='inputValor'
@@ -110,9 +110,9 @@ function CadastroMeta() {
                   onChange={(e) => setValor(e.target.value)}
                 />
               </FormGroup>
-              <FormGroup label='DataAlvo: *' htmlFor='inputDataAlvo'>
+              <FormGroup label='Data-Alvo: *' htmlFor='inputDataAlvo'>
                 <input
-                  type='date'
+                  type='month'
                   id='inputDataAlvo'
                   value={dataAlvo}
                   className='form-control'

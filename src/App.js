@@ -1,5 +1,5 @@
 import React from 'react';
-import 'bootswatch/dist/flatly/bootstrap.css';
+import 'bootswatch/dist/pulse/bootstrap.css';
 import 'toastr/build/toastr.min';
 import 'toastr/build/toastr.css';
 import Navbar from './components/navbar.js';

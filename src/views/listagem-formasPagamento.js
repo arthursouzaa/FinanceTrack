@@ -71,7 +71,7 @@ function ListagemFormasPagamento() {
                 className='btn btn-warning'
                 onClick={() => cadastrar()}
               >
-                Novo Meta
+                Nova Forma de Pagamento
               </button>
               <table className='table table-hover'>
                 <thead>

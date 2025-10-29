@@ -62,7 +62,7 @@ function ListagemMetas() {
 
   return (
     <div className='container'>
-      <Card title='Listagem de Metas'>
+      <Card title='Listagem de Metas Financeiras'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
@@ -71,7 +71,7 @@ function ListagemMetas() {
                 className='btn btn-warning'
                 onClick={() => cadastrar()}
               >
-                Novo Meta
+                Nova Meta Financeira
               </button>
               <table className='table table-hover'>
                 <thead>
@@ -87,10 +87,22 @@ function ListagemMetas() {
                   {dados.map((dado) => (
                     <tr key={dado.id}>
                       <td>{dado.nome}</td>
-                      <td>{dado.valor}</td>
+                      <td>
+                        {typeof dado.valor === 'number'
+                          ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                          : dado.valor
+                          ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                          : '—'}
+                      </td>
                       <td>{dado.dataAlvo}</td>
                     {/* Trocar por total investido:  */}
-                      <td>{dado.investimentoInicial}</td> 
+                      <td>
+                        {typeof dado.investimentoInicial === 'number'
+                          ? dado.investimentoInicial.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                          : dado.investimentoInicial
+                          ? Number(dado.investimentoInicial).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                          : '—'}
+                      </td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
