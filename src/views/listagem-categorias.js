@@ -35,11 +35,9 @@ function ListagemCategorias() {
 
         if (!mounted) return;
 
-        // normalize and tag with tipo
         const receitas = (receitaRes.data || []).map((r) => ({ ...r, tipo: 'receita' }));
         const despesas = (despesaRes.data || []).map((d) => ({ ...d, tipo: 'despesa' }));
 
-        // merge and sort by nome
         const merged = [...receitas, ...despesas].sort((a, b) =>
           (a.nome || '').localeCompare(b.nome || '')
         );
@@ -57,7 +55,6 @@ function ListagemCategorias() {
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cadastrar = () => {
@@ -65,7 +62,6 @@ function ListagemCategorias() {
   };
 
   const editar = (categoria) => {
-    // pass tipo in state so cadastro can preselect if you want
     navigate(`/cadastro-categorias/${categoria.id}`, { state: { tipo: categoria.tipo } });
   };
 
@@ -154,4 +150,3 @@ function ListagemCategorias() {
 }
 
 export default ListagemCategorias;
-// ...existing code...

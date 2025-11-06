@@ -16,10 +16,10 @@ import { BASE_URL, BASE_URL2 } from '../config/axios';
 function ListagemLancamentos() {
   const navigate = useNavigate();
 
-  const baseLocal = BASE_URL2; // Receita, Despesa, Categoria*
-  const baseRemote = BASE_URL; // FormaPagamento, MetaFinanceira, etc.
+  const baseLocal = BASE_URL2;
+  const baseRemote = BASE_URL; 
 
-  const [dados, setDados] = useState([]); // merged lançamentos with tipo flag
+  const [dados, setDados] = useState([]);
   const [dadosCategoriasReceita, setDadosCategoriasReceita] = useState([]);
   const [dadosCategoriasDespesa, setDadosCategoriasDespesa] = useState([]);
   const [dadosFormasPagamento, setDadosFormasPagamento] = useState([]);
@@ -50,9 +50,7 @@ function ListagemLancamentos() {
         const receitas = (receitasRes.data || []).map((r) => ({ ...r, tipo: 'receita' }));
         const despesas = (despesasRes.data || []).map((d) => ({ ...d, tipo: 'despesa' }));
 
-        // keep original insertion order or sort by date/name as needed
         const merged = [...receitas, ...despesas].sort((a, b) => {
-          // show newest first by date if available, fallback to nome
           const da = a.data ? new Date(a.data) : null;
           const db = b.data ? new Date(b.data) : null;
           if (da && db) return db - da;
@@ -77,7 +75,6 @@ function ListagemLancamentos() {
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cadastrar = () => {
