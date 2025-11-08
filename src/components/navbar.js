@@ -17,14 +17,7 @@ function Navbar(props) {
             <NavbarItem
               render='true'
               href='/listagem-metas'
-              label='Metas'
-            />
-          </ul>
-          <ul className='navbar-nav'>
-            <NavbarItem
-              render='true'
-              href='/listagem-aportes'
-              label='Aportes'
+              label='Metas Financeiras'
             />
           </ul>
           <ul className='navbar-nav'>

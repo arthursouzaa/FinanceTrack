@@ -76,22 +76,22 @@ function ListagemAportes() {
               <table className='table table-hover'>
                 <thead>
                   <tr>
-                    <th scope='col'>Valor</th>
                     <th scope='col'>Meta Financeira</th>
+                    <th scope='col'>Valor</th>
                     <th scope='col' colSpan={2}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dados.map((dado) => (
                     <tr key={dado.id}>
+                      <td>{dado.idMetaFinanceira}</td>
                       <td>
                         {typeof dado.valor === 'number'
                           ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                           : dado.valor
-                          ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : '—'}
+                            ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                            : '—'}
                       </td>
-                      <td>{dado.idMetaFinanceira}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton

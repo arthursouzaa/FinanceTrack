@@ -8,6 +8,8 @@ import '../custom.css';
 
 import { useNavigate } from 'react-router-dom';
 
+import ListagemAportes from './listagem-aportes';
+
 import Stack from '@mui/material/Stack';
 import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -61,73 +63,77 @@ function ListagemMetas() {
   if (!dados) return null;
 
   return (
-    <div className='container'>
-      <Card title='Listagem de Metas Financeiras'>
-        <div className='row'>
-          <div className='col-lg-12'>
-            <div className='bs-component'>
-              <button
-                type='button'
-                className='btn btn-warning'
-                onClick={() => cadastrar()}
-              >
-                Nova Meta Financeira
-              </button>
-              <table className='table table-hover'>
-                <thead>
-                  <tr>
-                    <th scope='col'>Nome</th>
-                    <th scope='col'>Valor-Alvo</th>
-                    <th scope='col'>Data-Alvo</th>
-                    <th scope='col'>Total Investido</th>
-                    <th scope='col' colSpan={2}>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dados.map((dado) => (
-                    <tr key={dado.id}>
-                      <td>{dado.nome}</td>
-                      <td>
-                        {typeof dado.valor === 'number'
-                          ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : dado.valor
-                          ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : '—'}
-                      </td>
-                      <td>{dado.dataAlvo}</td>
-                    {/* Trocar por total investido:  */}
-                      <td>
-                        {typeof dado.investimentoInicial === 'number'
-                          ? dado.investimentoInicial.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : dado.investimentoInicial
-                          ? Number(dado.investimentoInicial).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : '—'}
-                      </td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(dado.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={() => excluir(dado.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
+    <>
+      <div className='container'>
+        <Card title='Listagem de Metas Financeiras'>
+          <div className='row'>
+            <div className='col-lg-12'>
+              <div className='bs-component'>
+                <button
+                  type='button'
+                  className='btn btn-warning'
+                  onClick={() => cadastrar()}
+                >
+                  Nova Meta Financeira
+                </button>
+                <table className='table table-hover'>
+                  <thead>
+                    <tr>
+                      <th scope='col'>Nome</th>
+                      <th scope='col'>Valor-Alvo</th>
+                      <th scope='col'>Data-Alvo</th>
+                      <th scope='col'>Total Investido</th>
+                      <th scope='col' colSpan={2}>Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>{' '}
+                  </thead>
+                  <tbody>
+                    {dados.map((dado) => (
+                      <tr key={dado.id}>
+                        <td>{dado.nome}</td>
+                        <td>
+                          {typeof dado.valor === 'number'
+                            ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                            : dado.valor
+                              ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                              : '—'}
+                        </td>
+                        <td>{dado.dataAlvo}</td>
+                        {/* Trocar por total investido:  */}
+                        <td>
+                          {typeof dado.investimentoInicial === 'number'
+                            ? dado.investimentoInicial.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                            : dado.investimentoInicial
+                              ? Number(dado.investimentoInicial).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                              : '—'}
+                        </td>
+                        <td>
+                          <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                              aria-label='edit'
+                              onClick={() => editar(dado.id)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label='delete'
+                              onClick={() => excluir(dado.id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>{' '}
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+      <br></br>
+      <ListagemAportes />
+    </>
   );
 }
 

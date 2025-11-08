@@ -103,7 +103,7 @@ function CadastroAporte() {
         mensagemSucesso('Aporte alterado com sucesso!');
       }
 
-      navigate('/listagem-aportes');
+      navigate('/listagem-metas');
     } catch (error) {
       console.error(error);
       mensagemErro(error?.response?.data || 'Erro ao salvar aporte');
