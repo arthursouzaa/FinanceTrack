@@ -4,7 +4,7 @@ import NavbarItem from './navbarItem';
 
 function Navbar(props) {
   return (
-    <div className='navbar navbar-expand-lg fixed-top navbar-dark bg-primary p-1' style={{userSelect: 'none'}}>
+    <div className='navbar navbar-expand-lg fixed-top navbar-dark bg-primary p-1' style={{ userSelect: 'none' }}>
       <div className='container-fluid'>
         <a href='/' className='navbar-brand'>
           <img src={logo} alt="FinanceTrack" style={{ maxWidth: '100px', height: '50%' }} />
@@ -16,6 +16,20 @@ function Navbar(props) {
           <ul className='navbar-nav'>
             <NavbarItem
               render='true'
+              href='/#'
+              label='Inicio'
+            />
+          </ul>
+          <ul className='navbar-nav'>
+            <NavbarItem
+              render='true'
+              href='/listagem-lancamentos'
+              label='Receitas e Despesas'
+            />
+          </ul>
+          <ul className='navbar-nav'>
+            <NavbarItem
+              render='true'
               href='/listagem-metas'
               label='Metas Financeiras'
             />
@@ -23,22 +37,15 @@ function Navbar(props) {
           <ul className='navbar-nav'>
             <NavbarItem
               render='true'
-              href='/listagem-formasPagamento'
-              label='Formas de Pagamento'
+              href='/#'
+              label='Pagamentos'
             />
           </ul>
           <ul className='navbar-nav'>
             <NavbarItem
               render='true'
-              href='/listagem-categorias'
-              label='Categorias'
-            />
-          </ul>
-          <ul className='navbar-nav'>
-            <NavbarItem
-              render='true'
-              href='/listagem-lancamentos'
-              label='Lançamentos'
+              href='/#'
+              label='Relatorios'
             />
           </ul>
           {/* <ul className='navbar-nav'>

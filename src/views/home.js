@@ -1,13 +1,47 @@
 import React from 'react';
 import Card from '../components/card';
+import { IconButton } from '@mui/material';
+import BtnEdicao from '../components/btnEdicao';
+import "../styles/home.css"
 
 function Home() {
     return (
-        <div className="container" style={{textAlign: 'center'}}>
+        <div className="container" style={{ textAlign: 'center' }}>
             <img src={require('../assets/financetrack-slogan.png')} alt="FinanceTrack Slogan" style={{ maxWidth: '50%' }} />
-            <h3>Bem vindo ao seu sistema de controle financeiro pessoal.</h3>
-        </div>
 
+            <div id="dados-pessoais">
+                <div class="perfil">
+                    <img alt="Imagem de perfil" />
+                    <span class="nome-usuario">Ana</span>
+                </div>
+
+                <div class="conteudo">
+                    <h3>Seja bem-vindo(a), Ana!</h3>
+                    <p>
+                        Na página inicial você encontra o seu saldo total. Além disso, você pode
+                        editar seus dados pessoais, suas categorias de entrada/saída e formas de pagamento! 🎉
+                    </p>
+
+                    <div class="botoes">
+                        <BtnEdicao
+                            render='true'
+                            href='/listagem-formasPagamento'
+                            label='Editar Perfil ✏️'
+                        />
+                        <BtnEdicao
+                            render='true'
+                            href='/listagem-categorias'
+                            label='Editar Categorias ✏️'
+                        />
+                        <BtnEdicao
+                            render='true'
+                            href='/listagem-formasPagamento'
+                            label='Editar Formas de Pagamento ✏️'
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
 

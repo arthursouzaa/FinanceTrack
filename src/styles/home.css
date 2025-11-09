@@ -1,0 +1,75 @@
+#dados-pessoais {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: linear-gradient(90deg, #b667f1, #69c9f3);
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    max-width: 900px;
+    margin: 1rem auto;
+    text-align: left;
+}
+
+.perfil {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.perfil img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #d9d9d9;
+}
+
+.nome-usuario {
+    background: #a033ff;
+    color: white;
+    font-size: 0.75rem;
+    margin-top: 0.4rem;
+    padding: 2px 10px;
+    border-radius: 8px;
+}
+
+.conteudo {
+    flex: 1;
+}
+
+.conteudo h3 {
+    margin: 0;
+    font-weight: 700;
+}
+
+.conteudo p {
+    font-weight: 400;
+    line-height: 1.4;
+    font-size: 0.9rem;
+    margin-top: 4px;
+}
+
+.botoes {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.edicao {
+    display: inline-block;
+    text-transform: uppercase;
+    text-decoration: none;
+    background-color: #a033ff;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 8px 14px;
+    transition: background-color 0.2s ease;
+}
+
+.edicao:hover {
+    background-color: #8a26e0;
+    cursor: pointer;
+}
