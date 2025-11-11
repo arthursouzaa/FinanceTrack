@@ -84,7 +84,7 @@ function CadastroMeta() {
     setInvestimentoInicial(dados.investimentoInicial);
   }
 
-    return (
+  return (
     <div className='container'>
       <Card title='Cadastro de Meta'>
         <div className='row'>

@@ -90,8 +90,8 @@ function ListagemAportes() {
                         {typeof dado.valor === 'number'
                           ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                           : dado.valor
-                          ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : '—'}
+                            ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                            : '—'}
                       </td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
