@@ -65,14 +65,16 @@ function CadastroFormaPagamento() {
   }
 
   async function buscar() {
-    await axios.get(`${baseURL}/${idParam}`).then((response) => {
-      setDados(response.data);
-    });
-    setId(dados.id);
-    setNome(dados.nome);
+    if (idParam) {
+      await axios.get(`${baseURL}/${idParam}`).then((response) => {
+        setDados(response.data);
+      });
+      setId(dados.id);
+      setNome(dados.nome);
+    }
   }
 
-    return (
+  return (
     <div className='container'>
       <Card title='Cadastro de Forma de Pagamento'>
         <div className='row'>

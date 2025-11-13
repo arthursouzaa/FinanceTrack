@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
+
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
 
@@ -13,161 +14,142 @@ import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
 function CadastroAporte() {
-  const { idParam } = useParams();
-  const navigate = useNavigate();
-  
-  const baseURL = `${BASE_URL}/Aporte`;
+    const { idParam } = useParams();
 
-  const [id, setId] = useState('');
-  const [valor, setValor] = useState('');
-  const [idMetaFinanceira, setIdMetaFinanceira] = useState(''); // renamed from idMeta
-  const [dadosMetas, setDadosMetas] = useState([]); // initialize as empty array
-  const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
-  // Load metas on mount
-  useEffect(() => {
-    let mounted = true;
-    
-    async function carregarMetas() {
-      try {
-        const response = await axios.get(`${BASE_URL}/MetaFinanceira`);
-        if (mounted) {
-          setDadosMetas(response.data || []);
-          setLoading(false);
+    const baseURL = `${BASE_URL}/Aporte`;
+
+    const [id, setId] = useState('');
+    const [valor, setValor] = useState('');
+    const [idMetaFinanceira, setIdMetaFinanceira] = useState('');
+
+    const [dados, setDados] = React.useState([]);
+
+    function inicializar() {
+        if (idParam == null) {
+            setId('');
+            setValor('');
+            setIdMetaFinanceira('');
+        } else {
+            setId(dados.id);
+            setValor(dados.valor);
+            setIdMetaFinanceira(dados.idMetaFinanceira);
         }
-      } catch (error) {
-        console.error(error);
-        mensagemErro('Erro ao carregar metas financeiras');
-      }
     }
 
-    carregarMetas();
-    return () => { mounted = false };
-  }, []);
-
-  // Load existing aporte when editing
-  useEffect(() => {
-    if (!idParam) {
-      inicializar();
-      return;
+    async function salvar() {
+        let data = { id, valor, idMetaFinanceira };
+        data = JSON.stringify(data);
+        if (idParam == null) {
+            await axios
+                .post(baseURL, data, {
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                .then(function (response) {
+                    mensagemSucesso(`Aporte cadastrado com sucesso!`);
+                    navigate(`/listagem-metas`);
+                })
+                .catch(function (error) {
+                    mensagemErro(error.response.data);
+                });
+        } else {
+            await axios
+                .put(`${baseURL}/${idParam}`, data, {
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                .then(function (response) {
+                    mensagemSucesso(`Aporte alterado com sucesso!`);
+                    navigate(`/listagem-metas`);
+                })
+                .catch(function (error) {
+                    mensagemErro(error.response.data);
+                });
+        }
     }
-
-    let mounted = true;
 
     async function buscar() {
-      try {
-        const response = await axios.get(`${baseURL}/${idParam}`);
-        if (!mounted) return;
-        
-        const data = response.data;
-        setId(data.id);
-        setValor(data.valor);
-        setIdMetaFinanceira(data.idMetaFinanceira);
-      } catch (error) {
-        console.error(error);
-        mensagemErro('Erro ao carregar aporte');
-      }
+        if (idParam) {
+            await axios.get(`${baseURL}/${idParam}`).then((response) => {
+                setDados(response.data);
+            });
+            setId(dados.id);
+            setValor(dados.valor);
+            setIdMetaFinanceira(dados.idMetaFinanceira);
+        }
     }
 
-    buscar();
-    return () => { mounted = false };
-  }, [idParam, baseURL]);
+    const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = React.useState(null);
 
-  function inicializar() {
-    setId('');
-    setValor('');
-    setIdMetaFinanceira('');
-  }
-
-  async function salvar() {
-    try {
-      if (!valor || !idMetaFinanceira) {
-        mensagemErro('Preencha todos os campos obrigatórios');
-        return;
-      }
-
-      const payload = {
-        valor: Number(valor),
-        idMetaFinanceira: Number(idMetaFinanceira)
-      };
-
-      if (!idParam) {
-        await axios.post(baseURL, payload, {
-          headers: { 'Content-Type': 'application/json' }
+    useEffect(() => {
+        axios.get(`${BASE_URL}/MetaFinanceira`).then((response) => {
+            setDadosMetasFinanceiras(response.data);
         });
-        mensagemSucesso('Aporte cadastrado com sucesso!');
-      } else {
-        await axios.put(`${baseURL}/${idParam}`, payload, {
-          headers: { 'Content-Type': 'application/json' }
-        });
-        mensagemSucesso('Aporte alterado com sucesso!');
-      }
+    }, []);
 
-      navigate('/listagem-metas');
-    } catch (error) {
-      console.error(error);
-      mensagemErro(error?.response?.data || 'Erro ao salvar aporte');
-    }
-  }
+    useEffect(() => {
+        buscar(); // eslint-disable-next-line
+    }, [id]);
 
-  if (loading) {
+    if (!dados) return null;
+    if (!dadosMetasFinanceiras) return null;
+
     return (
-      <div className='container'>
-        <Card title='Cadastro de Aporte'>
-          <div>Carregando...</div>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className='container'>
-      <Card title='Cadastro de Aporte'>
-        <div className='row'>
-          <div className='col-lg-12'>
-            <div className='bs-component'>
-              <FormGroup label='Valor: *' htmlFor='inputValor'>
-                <input
-                  type='number'
-                  id='inputValor'
-                  value={valor}
-                  className='form-control'
-                  name='valor'
-                  onChange={(e) => setValor(e.target.value)}
-                  step='0.01'
-                  min='0'
-                />
-              </FormGroup>
-              <FormGroup label='Meta Financeira: *' htmlFor='selectMeta'>
-                <select
-                  className='form-select'
-                  id='selectMeta'
-                  name='idMetaFinanceira'
-                  value={idMetaFinanceira}
-                  onChange={(e) => setIdMetaFinanceira(e.target.value)}
-                >
-                  <option value=''>Selecione uma meta...</option>
-                  {dadosMetas.map((meta) => (
-                    <option key={meta.id} value={meta.id}>
-                      {meta.nome}
-                    </option>
-                  ))}
-                </select>
-              </FormGroup>
-              <Stack spacing={1} padding={1} direction='row'>
-                <button onClick={salvar} type='button' className='btn btn-success'>
-                  Salvar
-                </button>
-                <button onClick={inicializar} type='button' className='btn btn-danger'>
-                  Cancelar
-                </button>
-              </Stack>
-            </div>
-          </div>
+        <div className='container'>
+            <Card title='Cadastro de Aporte'>
+                <div className='row'>
+                    <div className='col-lg-12'>
+                        <div className='bs-component'>
+                            <FormGroup label='Valor: *' htmlFor='inputValor'>
+                                <input
+                                    type='valor'
+                                    id='inputValor'
+                                    value={valor}
+                                    className='form-control'
+                                    name='valor'
+                                    onChange={(e) => setValor(e.target.value)}
+                                />
+                            </FormGroup>
+                            <FormGroup label='Meta Financeira: ' htmlFor='selectMetaFinanceira'>
+                                <select
+                                    className='form-select'
+                                    id='selectMetasFinanceiras'
+                                    name='idMetaFinanceira'
+                                    value={idMetaFinanceira}
+                                    onChange={(e) => setIdMetaFinanceira(e.target.value)}
+                                >
+                                    <option key='0' value='0'>
+                                        {' '}
+                                    </option>
+                                    {dadosMetasFinanceiras.map((dado) => (
+                                        <option key={dado.id} value={dado.id}>
+                                            {dado.nome}
+                                        </option>
+                                    ))}
+                                </select>
+                            </FormGroup>
+                            <Stack spacing={1} padding={1} direction='row'>
+                                <button
+                                    onClick={salvar}
+                                    type='button'
+                                    className='btn btn-success'
+                                >
+                                    Salvar
+                                </button>
+                                <button
+                                    onClick={inicializar}
+                                    type='button'
+                                    className='btn btn-danger'
+                                >
+                                    Cancelar
+                                </button>
+                            </Stack>
+                        </div>
+                    </div>
+                </div>
+            </Card>
         </div>
-      </Card>
-    </div>
-  );
+    );
 }
 
 export default CadastroAporte;

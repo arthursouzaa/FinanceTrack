@@ -3,6 +3,7 @@ import Card from '../components/card';
 import { IconButton } from '@mui/material';
 import BtnEdicao from '../components/btnEdicao';
 import "../styles/home.css"
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function Home() {
     return (
@@ -10,19 +11,19 @@ function Home() {
             <img src={require('../assets/financetrack-slogan.png')} alt="FinanceTrack Slogan" style={{ maxWidth: '50%' }} />
 
             <div id="dados-pessoais">
-                <div class="perfil">
-                    <img alt="Imagem de perfil" />
-                    <span class="nome-usuario">Ana</span>
+                <div className="perfil" style={{padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                    <i className="bi bi-person-circle" alt="Imagem de perfil" style={{fontSize: 70, marginBottom: -10}}></i>
+                    <span className="nome-usuario" style={{margin: 0}}>Ana</span>
                 </div>
 
-                <div class="conteudo">
+                <div className="conteudo">
                     <h3>Seja bem-vindo(a), Ana!</h3>
                     <p>
                         Na página inicial você encontra o seu saldo total. Além disso, você pode
                         editar seus dados pessoais, suas categorias de entrada/saída e formas de pagamento! 🎉
                     </p>
 
-                    <div class="botoes">
+                    <div className="botoes">
                         <BtnEdicao
                             render='true'
                             href='/listagem-formasPagamento'

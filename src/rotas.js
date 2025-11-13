@@ -3,10 +3,10 @@ import React from 'react';
 import Home from './views/home';
 
 import CadastroMetas from './views/cadastro-metas';
-// import CadastroAportes from './views/cadastro-aportes';
+import CadastroAportes from './views/cadastro-aportes';
 import CadastroFormasPagamento from './views/cadastro-formasPagamento';
-// import CadastroCategorias from './views/cadastro-categorias';
-// import CadastroLancamentos from './views/cadastro-lancamentos';
+import CadastroCategorias from './views/cadastro-categorias';
+import CadastroLancamentos from './views/cadastro-lancamentos';
 
 import ListagemMetas from './views/listagem-metas';
 import ListagemAportes from './views/listagem-aportes';
@@ -23,10 +23,10 @@ function Rotas(props) {
         <Route path='/' element={<Home />} />
         
         <Route path='/cadastro-metas/:idParam?' element={<CadastroMetas />} />
-        {/* <Route path='/cadastro-aportes/:idParam?' element={<CadastroAportes />} /> */}
+        <Route path='/cadastro-aportes/:idParam?' element={<CadastroAportes />} />
         <Route path='/cadastro-formasPagamento/:idParam?' element={<CadastroFormasPagamento />} />
-        {/* <Route path='/cadastro-categorias/:idParam?' element={<CadastroCategorias />} /> */}
-        {/* <Route path='/cadastro-lancamentos/:idParam?' element={<CadastroLancamentos />} /> */}
+        <Route path='/cadastro-categorias/:idParam?' element={<CadastroCategorias />} />
+        <Route path='/cadastro-lancamentos/:idParam?' element={<CadastroLancamentos />} />
 
         <Route path='/listagem-metas' element={<ListagemMetas />} />
         <Route path='/listagem-aportes' element={<ListagemAportes />} />

@@ -30,7 +30,6 @@ function ListagemAportes() {
   };
 
   const [dados, setDados] = useState(null);
-  const [dadosMetas, setDadosMetas] = useState([]);
 
   async function excluir(id) {
     let data = JSON.stringify({ id });
@@ -85,7 +84,7 @@ function ListagemAportes() {
                 <tbody>
                   {dados.map((dado) => (
                     <tr key={dado.id}>
-                      <td>{dado.idMetaFinanceira}</td>
+                      <td>{dado.nomeMetaFinanceira}</td>
                       <td>
                         {typeof dado.valor === 'number'
                           ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
