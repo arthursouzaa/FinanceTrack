@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Form, useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
 
@@ -112,12 +112,12 @@ function CadastroLancamento() {
 
     return (
         <div className='container'>
-            <Card title='Cadastro de Lancamento'>
+            <Card title='Cadastro de Lançamento'>
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>
-                            <FormGroup label='Tipo:' htmlFor='tipoReceita'>
-                                <div>
+                            <Stack spacing={1} padding={0} direction='row'>
+                                <FormGroup label='Tipo: &nbsp;' htmlFor='tipoReceita'>
                                     <label>
                                         <input
                                             type='radio'
@@ -128,6 +128,8 @@ function CadastroLancamento() {
                                         />
                                         Receita
                                     </label>
+                                </FormGroup>
+                                <FormGroup label='' htmlFor='tipoDespesa'>
                                     <label>
                                         <input
                                             type='radio'
@@ -138,8 +140,8 @@ function CadastroLancamento() {
                                         />
                                         Despesa
                                     </label>
-                                </div>
-                            </FormGroup>
+                                </FormGroup>
+                            </Stack>
                             <FormGroup label='Nome: *' htmlFor='inputNome'>
                                 <input
                                     type='text'
@@ -178,15 +180,20 @@ function CadastroLancamento() {
                                     ))}
                                 </select>
                             </FormGroup>
-                            <FormGroup label='Volume: ' htmlFor='inputVolume'>
-                                <input
-                                    type='checkbox'
-                                    id='inputVolume'
-                                    value={volume}
-                                    name='volume'
-                                    onChange={(e) => setVolume(e.target.value)}
-                                /> Fixa
-                            </FormGroup>
+                            <Stack spacing={1} padding={0} direction='row' className='form-switch'>
+                                <FormGroup label='Volume: &nbsp;' htmlFor='inputVolume'>
+                                    <input
+                                        type='checkbox'
+                                        className='form-check-input'
+                                        role='switch'
+                                        id='inputVolume'
+                                        value={volume}
+                                        name='volume'
+                                        onChange={(e) => setVolume(e.target.value)}
+                                        style={{marginLeft: 3}}
+                                    /> Fixa
+                                </FormGroup>
+                           </Stack>
                             <FormGroup label='Valor: *' htmlFor='inputValor'>
                                 <input
                                     type='valor'

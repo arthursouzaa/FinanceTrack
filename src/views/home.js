@@ -1,6 +1,5 @@
 import React from 'react';
 import Card from '../components/card';
-import { IconButton } from '@mui/material';
 import BtnEdicao from '../components/btnEdicao';
 import "../styles/home.css"
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -22,22 +21,21 @@ function Home() {
                         Na página inicial você encontra o seu saldo total. Além disso, você pode
                         editar seus dados pessoais, suas categorias de entrada/saída e formas de pagamento! 🎉
                     </p>
-
                     <div className="botoes">
                         <BtnEdicao
                             render='true'
-                            href='/listagem-formasPagamento'
-                            label='Editar Perfil ✏️'
+                            href='#'
+                            label='Editar Perfil '
                         />
                         <BtnEdicao
                             render='true'
                             href='/listagem-categorias'
-                            label='Editar Categorias ✏️'
+                            label='Editar Categorias '
                         />
                         <BtnEdicao
                             render='true'
                             href='/listagem-formasPagamento'
-                            label='Editar Formas de Pagamento ✏️'
+                            label='Editar Formas de Pagamento '
                         />
                     </div>
                 </div>
