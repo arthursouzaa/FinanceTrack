@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 
 import Card from '../components/card';
+
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
+
 import '../custom.css';
+
+import { useNavigate } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
 import { IconButton } from '@mui/material';
@@ -13,114 +16,110 @@ import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import { BASE_URL, BASE_URL2 } from '../config/axios';
 
+const baseReceitas = `${BASE_URL2}/Receita`;
+const baseDespesas = `${BASE_URL2}/Despesa`;
+const baseCategoriasR = `${BASE_URL2}/CategoriaReceita`;
+const baseCategoriasD = `${BASE_URL2}/CategoriaDespesa`;
+const baseFormasPagamento = `${BASE_URL}/FormaPagamento`;
+
 function ListagemLancamentos() {
   const navigate = useNavigate();
 
-  const baseLocal = BASE_URL2;
-  const baseRemote = BASE_URL; 
+  const cadastrar = () => {
+    navigate(`/cadastro-lancamentos`);
+  };
 
-  const [dados, setDados] = useState([]);
-  const [dadosCategoriasReceita, setDadosCategoriasReceita] = useState([]);
-  const [dadosCategoriasDespesa, setDadosCategoriasDespesa] = useState([]);
-  const [dadosFormasPagamento, setDadosFormasPagamento] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const editar = (id, tipo) => {
+    navigate(`/cadastro-lancamentos/${id}?tipo=${tipo}`)
+  };
 
-  useEffect(() => {
-    let mounted = true;
+  const [dadosReceitas, setDadosReceitas] = React.useState(null);
+  const [dadosDespesas, setDadosDespesas] = React.useState(null);
+  const [dadosCategoriasReceita, setDadosCategoriasReceita] = React.useState([]);
+  const [dadosCategoriasDespesa, setDadosCategoriasDespesa] = React.useState([]);
+  const [dadosFormasPagamento, setDadosFormasPagamento] = React.useState([]);
 
-    async function carregar() {
-      try {
-        setLoading(true);
-        const [
-          receitasRes,
-          despesasRes,
-          catRecRes,
-          catDespRes,
-          formasRes,
-        ] = await Promise.all([
-          axios.get(`${baseLocal}/Receita`).catch(() => ({ data: [] })),
-          axios.get(`${baseLocal}/Despesa`).catch(() => ({ data: [] })),
-          axios.get(`${baseLocal}/CategoriaReceita`).catch(() => ({ data: [] })),
-          axios.get(`${baseLocal}/CategoriaDespesa`).catch(() => ({ data: [] })),
-          axios.get(`${baseRemote}/FormaPagamento`).catch(() => ({ data: [] })),
-        ]);
 
-        if (!mounted) return;
-
-        const receitas = (receitasRes.data || []).map((r) => ({ ...r, tipo: 'receita' }));
-        const despesas = (despesasRes.data || []).map((d) => ({ ...d, tipo: 'despesa' }));
-
-        const merged = [...receitas, ...despesas].sort((a, b) => {
-          const da = a.data ? new Date(a.data) : null;
-          const db = b.data ? new Date(b.data) : null;
-          if (da && db) return db - da;
-          if (da && !db) return -1;
-          if (!da && db) return 1;
-          return (a.nome || '').localeCompare(b.nome || '');
+  async function excluir(id, tipo) {
+    if (tipo == 'Receita') {
+      let data = JSON.stringify({ id });
+      let url = `${baseReceitas}/${id}`;
+      console.log(url);
+      await axios
+        .delete(url, data, {
+          headers: { 'Content-Type': 'application/json' },
+        })
+        .then(function (response) {
+          mensagemSucesso(`Lançamento excluído com sucesso!`);
+          setDadosReceitas(
+            dadosReceitas.filter((dado) => {
+              return dado.id !== id;
+            })
+          );
+        })
+        .catch(function (error) {
+          mensagemErro(`Erro ao excluir o lançamento`);
         });
-
-        setDados(merged);
-        setDadosCategoriasReceita(catRecRes.data || []);
-        setDadosCategoriasDespesa(catDespRes.data || []);
-        setDadosFormasPagamento(formasRes.data || []);
-      } catch (err) {
-        console.error(err);
-        mensagemErro('Erro ao carregar lançamentos');
-      } finally {
-        if (mounted) setLoading(false);
-      }
     }
+    if (tipo == 'Despesa') {
+      let data = JSON.stringify({ id });
+      let url = `${baseDespesas}/${id}`;
+      console.log(url);
+      await axios
+        .delete(url, data, {
+          headers: { 'Content-Type': 'application/json' },
+        })
+        .then(function (response) {
+          mensagemSucesso(`Lançamento excluído com sucesso!`);
+          setDadosDespesas(
+            dadosDespesas.filter((dado) => {
+              return dado.id !== id;
+            })
+          );
+        })
+        .catch(function (error) {
+          mensagemErro(`Erro ao excluir o lançamento`);
+        });
+    }
+  }
 
-    carregar();
-    return () => {
-      mounted = false;
-    };
+  function nomeCategoria(lancamento) {
+    if (lancamento.tipo === 'Receita') {
+      const categoria = dadosCategoriasReceita.find((x) => x.id === lancamento.idCategoriaReceita);
+      return categoria ? categoria.nome : lancamento.idCategoriaReceita ?? '—';
+    }
+    const categoria = dadosCategoriasDespesa.find((x) => x.id === lancamento.idCategoriaDespesa);
+    return categoria ? categoria.nome : lancamento.idCategoriaDespesa ?? '—';
+  }
+
+  function nomeFormaPagamento(lancamento) {
+    const formaPagamento = dadosFormasPagamento.find((x) => x.id === lancamento.idFormaPagamento);
+    return formaPagamento ? formaPagamento.nome : lancamento.idFormaPagamento ?? '—';
+  }
+
+  React.useEffect(() => {
+    axios.get(baseReceitas).then((response) => {
+      setDadosReceitas(response.data);
+    });
+    axios.get(baseDespesas).then((response) => {
+      setDadosDespesas(response.data);
+    });
+    axios.get(baseCategoriasR).then((response) => {
+      setDadosCategoriasReceita(response.data);
+    });
+    axios.get(baseCategoriasD).then((response) => {
+      setDadosCategoriasDespesa(response.data);
+    });
+    axios.get(baseFormasPagamento).then((response) => {
+      setDadosFormasPagamento(response.data);
+    });
   }, []);
 
-  const cadastrar = () => {
-    navigate('/cadastro-lancamentos');
-  };
-
-  const editar = (lancamento) => {
-    navigate(`/cadastro-lancamentos/${lancamento.id}`, { state: { tipo: lancamento.tipo } });
-  };
-
-  const excluir = async (lancamento) => {
-    const collection = lancamento.tipo === 'receita' ? 'Receita' : 'Despesa';
-    if (!window.confirm('Confirma exclusão deste lançamento?')) return;
-    try {
-      await axios.delete(`${baseLocal}/${collection}/${lancamento.id}`);
-      mensagemSucesso('Lançamento excluído com sucesso!');
-      setDados((prev) => prev.filter((d) => !(d.id === lancamento.id && d.tipo === lancamento.tipo)));
-    } catch (err) {
-      console.error(err);
-      mensagemErro('Erro ao excluir lançamento');
-    }
-  };
-
-  function nomeCategoria(lanc) {
-    if (lanc.tipo === 'receita') {
-      const c = dadosCategoriasReceita.find((x) => x.id === lanc.idCategoriaReceita);
-      return c ? c.nome : lanc.idCategoriaReceita ?? '—';
-    }
-    const c = dadosCategoriasDespesa.find((x) => x.id === lanc.idCategoriaDespesa);
-    return c ? c.nome : lanc.idCategoriaDespesa ?? '—';
-  }
-
-  function nomeForma(id) {
-    const f = dadosFormasPagamento.find((x) => x.id === id);
-    return f ? f.nome : id ?? '—';
-  }
-
-  if (loading) {
-    return (
-      <div className='container'>
-        <Card title='Listagem de Lançamentos'>
-          <div>Carregando...</div>
-        </Card>
-      </div>
-    );
-  }
+  if (!dadosReceitas) return null;
+  if (!dadosDespesas) return null;
+  if (!dadosCategoriasReceita) return null;
+  if (!dadosCategoriasDespesa) return null;
+  if (!dadosFormasPagamento) return null;
 
   return (
     <div className='container'>
@@ -128,55 +127,86 @@ function ListagemLancamentos() {
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <button type='button' className='btn btn-warning' onClick={cadastrar}>
+              <button
+                type='button'
+                className='btn btn-warning'
+                onClick={() => cadastrar()}
+              >
                 Novo Lançamento
               </button>
-
               <table className='table table-hover'>
                 <thead>
                   <tr>
-                    <th>Tipo</th>
-                    <th>Nome</th>
-                    <th>Data</th>
-                    <th>Categoria</th>
-                    <th>Volume</th>
-                    <th>Valor</th>
-                    <th>Forma de Pagamento</th>
-                    <th>Parcelada</th>
-                    <th colSpan={2}>Ações</th>
+                    <th scope='col'>Tipo</th>
+                    <th scope='col'>Nome</th>
+                    <th scope='col'>Data</th>
+                    <th scope='col'>Categoria</th>
+                    <th scope='col'>Volume</th>
+                    <th scope='col'>Valor</th>
+                    <th scope='col'>Forma de Pagamento</th>
+                    <th scope='col'>Parcelada</th>
+                    <th scope='col' colSpan={2}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {dados.length === 0 && (
-                    <tr>
-                      <td colSpan={10}>Nenhum lançamento encontrado</td>
-                    </tr>
-                  )}
-
-                  {dados.map((l) => (
-                    <tr key={`${l.tipo}-${l.id}`}>
-                      <td style={{ textTransform: 'capitalize' }}>{l.tipo}</td>
-                      <td>{l.nome}</td>
-                      <td>{l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '—'}</td>
-                      <td>{nomeCategoria(l)}</td>
-                      <td>{l.volume ? 'Fixa' : 'Única'}</td>
-                      <td>
-                        {typeof l.valor === 'number'
-                          ? l.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : l.valor
-                          ? Number(l.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : '—'}
-                      </td>
-                      <td>{l.tipo === 'despesa' ? nomeForma(l.idFormaPagamento) : '—'}</td>
-                      <td>
-                        {l.tipo === 'despesa' ? (l.parcelada ? `${l.quantidadeParcelas || 1}x` : '—') : '—'}
-                      </td>
+                  {dadosReceitas.map((dado) => (
+                    <tr key={dado.id}>
+                      <td>{dado.tipo}</td>
+                      <td>{dado.nome}</td>
+                      <td>{dado.data ? new Date(dado.data).toLocaleDateString('pt-BR') : '—'}</td>
+                      <td>{nomeCategoria(dado)}</td>
+                      <td>{dado.volume ? 'Fixa' : 'Única'}</td>
+                      <td>{typeof dado.valor === 'number'
+                        ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                        : dado.valor
+                          ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                          : '—'}</td>
+                      <td>{nomeFormaPagamento(dado)}</td>
+                      <td>{dado.parcelada ? 'Sim' : 'Não'}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton aria-label='edit' onClick={() => editar(l)}>
+                          <IconButton
+                            aria-label='edit'
+                            onClick={() => editar(dado.id, dado.tipo)}
+                          >
                             <EditIcon />
                           </IconButton>
-                          <IconButton aria-label='delete' onClick={() => excluir(l)}>
+                          <IconButton
+                            aria-label='delete'
+                            onClick={() => excluir(dado.id, dado.tipo)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Stack>
+                      </td>
+                    </tr>
+                  ))}
+                  {dadosDespesas.map((dado) => (
+                    <tr key={dado.id}>
+                      <td>{dado.tipo}</td>
+                      <td>{dado.nome}</td>
+                      <td>{dado.data ? new Date(dado.data).toLocaleDateString('pt-BR') : '—'}</td>
+                      <td>{nomeCategoria(dado)}</td>
+                      <td>{dado.volume ? 'Fixa' : 'Única'}</td>
+                      <td>{typeof dado.valor === 'number'
+                        ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                        : dado.valor
+                          ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                          : '—'}</td>
+                      <td>{nomeFormaPagamento(dado)}</td>
+                      <td>{dado.parcelada ? 'Sim' : 'Não'}</td>
+                      <td>
+                        <Stack spacing={1} padding={0} direction='row'>
+                          <IconButton
+                            aria-label='edit'
+                            onClick={() => editar(dado.id, dado.tipo)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            aria-label='delete'
+                            onClick={() => excluir(dado.id, dado.tipo)}
+                          >
                             <DeleteIcon />
                           </IconButton>
                         </Stack>
@@ -184,7 +214,7 @@ function ListagemLancamentos() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table>{' '}
             </div>
           </div>
         </div>
@@ -193,4 +223,4 @@ function ListagemLancamentos() {
   );
 }
 
-// export default ListagemLancamentos;
+export default ListagemLancamentos;

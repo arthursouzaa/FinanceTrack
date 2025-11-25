@@ -34,13 +34,13 @@ function Navbar(props) {
               label='Metas Financeiras'
             />
           </ul>
-          <ul className='navbar-nav'>
+          {/* <ul className='navbar-nav'>
             <NavbarItem
               render='true'
               href='/#'
               label='Pagamentos'
             />
-          </ul>
+          </ul> */}
           <ul className='navbar-nav'>
             <NavbarItem
               render='true'

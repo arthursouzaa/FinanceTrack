@@ -6,13 +6,13 @@ import CadastroMetas from './views/cadastro-metas';
 import CadastroAportes from './views/cadastro-aportes';
 import CadastroFormasPagamento from './views/cadastro-formasPagamento';
 import CadastroCategorias from './views/cadastro-categorias';
-import CadastroLancamentos from './views/cadastro-lancamentos2';
+import CadastroLancamentos from './views/cadastro-lancamentos';
 
 import ListagemMetas from './views/listagem-metas';
 import ListagemAportes from './views/listagem-aportes';
 import ListagemFormasPagamento from './views/listagem-formasPagamento';
 import ListagemCategorias from './views/listagem-categorias';
-import ListagemLancamentos from './views/listagem-lancamentos2';
+import ListagemLancamentos from './views/listagem-lancamentos';
 
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
 
