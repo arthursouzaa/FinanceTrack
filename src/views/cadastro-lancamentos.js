@@ -93,6 +93,7 @@ function CadastroLancamento() {
           setTipo('Receita');
           setNome(data.nome ?? '');
           setData(data.data ?? '');
+          setValor(data.valor ?? '');
           setIdCategoria(data.idCategoria ?? '');
           setVolume(data.volume ?? false);
           return;
@@ -133,13 +134,13 @@ function CadastroLancamento() {
     }
   }
 
-  const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = React.useState(null);
+  const [dadosFormasPagamento, setDadosFormasPagamento] = React.useState(null);
   const [dadosCategoriasReceita, setDadosCategoriasReceita] = React.useState([]);
   const [dadosCategoriasDespesa, setDadosCategoriasDespesa] = React.useState([]);
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/MetaFinanceira`).then((response) => {
-      setDadosMetasFinanceiras(response.data);
+    axios.get(`${BASE_URL}/FormaPagamento`).then((response) => {
+      setDadosFormasPagamento(response.data);
     });
     axios.get(`${BASE_URL2}/CategoriaReceita`).then((response) => {
       setDadosCategoriasReceita(response.data);
@@ -154,7 +155,7 @@ function CadastroLancamento() {
     // eslint-disable-next-line
   }, [idParam, tipoQuery]);
 
-  if (!dadosMetasFinanceiras) return null;
+  if (!dadosFormasPagamento) return null;
   if (!dadosCategoriasReceita) return null;
   if (!dadosCategoriasDespesa) return null;
 
@@ -164,113 +165,140 @@ function CadastroLancamento() {
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <FormGroup label='Tipo:' htmlFor='inputTipo'>
-                <div>
-                  <label>
-                    <input
-                      type='radio'
-                      id='inputTipo'
-                      name='tipo'
-                      value='Receita'
-                      checked={tipo === 'Receita'}
-                      onChange={(e) => setTipo(e.target.value)}
-                    />
-                    Receita
-                  </label>
-                  <label>
-                    <input
-                      type='radio'
-                      id='inputTipoDespesa'
-                      name='tipo'
-                      value='Despesa'
-                      checked={tipo === 'Despesa'}
-                      onChange={(e) => setTipo(e.target.value)}
-                    />
-                    Despesa
-                  </label>
-                </div>
-              </FormGroup>
-              <FormGroup label='Nome: ' htmlFor='inputNome'>
-                <input
-                  type='text'
-                  id='inputNome'
-                  value={nome}
-                  className='form-control'
-                  name='nome'
-                  onChange={(e) => setNome(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup label='Data: ' htmlFor='inputData'>
-                <input
-                  type='date'
-                  id='inputData'
-                  value={data}
-                  className='form-control'
-                  name='data'
-                  onChange={(e) => setData(e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup label='Categoria: ' htmlFor='selectCategoria'>
-                <select
-                  id='selectCategoria'
-                  className='form-select'
-                  value={idCategoria}
-                  onChange={(e) => setIdCategoria(e.target.value)}
-                >
-                  <option value=''> </option>
-                  {(tipo === 'Receita' ? dadosCategoriasReceita : dadosCategoriasDespesa).map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nome}
-                    </option>
-                  ))}
-                </select>
-              </FormGroup>
-              <Stack spacing={1} padding={0} direction='row' className='form-switch'>
-                <FormGroup label='Volume: &nbsp;' htmlFor='inputVolume'>
+              <Stack spacing={1} padding={0} direction='row'>
+              <FormGroup label='Tipo: ' htmlFor='inputTipo'>
+                <label>
                   <input
-                    type='checkbox'
-                    className='form-check-input'
-                    role='switch'
-                    id='inputVolume'
-                    value={volume}
-                    name='volume'
-                    onChange={(e) => setVolume(e.target.checked)}
-                    checked={volume}
-                    style={{ marginLeft: 3 }}
-                  /> Fixa
-                </FormGroup>
-              </Stack>
-              <FormGroup label='Valor: ' htmlFor='inputValor'>
-                <input
-                  type='text'
-                  id='inputValor'
-                  value={valor}
-                  className='form-control'
-                  name='valor'
-                  onChange={(e) => setValor(e.target.value)}
-                />
-              </FormGroup>
-              <Stack spacing={1} padding={1} direction='row'>
-                <button
-                  onClick={salvar}
-                  type='button'
-                  className='btn btn-success'
-                >
-                  Salvar
-                </button>
-                <button
-                  onClick={inicializar}
-                  type='button'
-                  className='btn btn-danger'
-                >
-                  Cancelar
-                </button>
-              </Stack>
-            </div>
-          </div>
+                    type='radio'
+                    id='inputTipo'
+                    name='tipo'
+                    value='Receita'
+                    checked={tipo === 'Receita'}
+                    onChange={(e) => setTipo(e.target.value)}
+                  />
+                  Receita
+                </label>
+                <label>
+                  <input
+                    type='radio'
+                    id='inputTipoDespesa'
+                    name='tipo'
+                    value='Despesa'
+                    checked={tipo === 'Despesa'}
+                    onChange={(e) => setTipo(e.target.value)}
+                  />
+                  Despesa
+                </label>
+            </FormGroup>
+          </Stack>
+          <FormGroup label='Nome: ' htmlFor='inputNome'>
+            <input
+              type='text'
+              id='inputNome'
+              value={nome}
+              className='form-control'
+              name='nome'
+              onChange={(e) => setNome(e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup label='Data: ' htmlFor='inputData'>
+            <input
+              type='date'
+              id='inputData'
+              value={data}
+              className='form-control'
+              name='data'
+              onChange={(e) => setData(e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup label='Categoria: ' htmlFor='selectCategoria'>
+            <select
+              id='selectCategoria'
+              className='form-select'
+              value={idCategoria}
+              onChange={(e) => setIdCategoria(e.target.value)}
+            >
+              <option value=''> </option>
+              {(tipo === 'Receita' ? dadosCategoriasReceita : dadosCategoriasDespesa).map((categoria) => (
+                <option key={categoria.id} value={categoria.id}>
+                  {categoria.nome}
+                </option>
+              ))}
+            </select>
+          </FormGroup>
+          <Stack spacing={1} padding={0} direction='row' className='form-switch'>
+            <FormGroup label='Volume: &nbsp;' htmlFor='inputVolume'>
+              <input
+                type='checkbox'
+                className='form-check-input'
+                role='switch'
+                id='inputVolume'
+                value={volume}
+                name='volume'
+                onChange={(e) => setVolume(e.target.checked)}
+                checked={volume}
+                style={{ marginLeft: 3 }}
+              /> Fixa
+            </FormGroup>
+          </Stack>
+          <FormGroup label='Valor: ' htmlFor='inputValor'>
+            <input
+              type='text'
+              id='inputValor'
+              value={valor}
+              className='form-control'
+              name='valor'
+              onChange={(e) => setValor(e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup label='Forma de Pagamento: ' htmlFor='selectFormaPagamento'>
+            <select
+              id='selectFormaPagamento'
+              className='form-select'
+              value={idFormaPagamento}
+              onChange={(e) => setIdFormaPagamento(e.target.value)}
+              disabled={tipo === 'Receita'}
+            >
+              <option value=''> </option>
+              {dadosFormasPagamento.map((dado) => (
+                <option key={dado.id} value={dado.id}>
+                  {dado.nome}
+                </option>
+              ))}
+            </select>
+          </FormGroup>
+          <FormGroup label='Quantidade de Parcelas: ' htmlFor='inputParcelada'>
+            <input
+              type='number'
+              id='inputParcelada'
+              value={parcelada}
+              className='form-control'
+              name='parcelada'
+              onChange={(e) => setParcelada(e.target.value)}
+              disabled={tipo === 'Receita'}
+            />
+          </FormGroup>
+          <Stack spacing={1} padding={1} direction='row'>
+            <button
+              onClick={salvar}
+              type='button'
+              className='btn btn-success'
+            >
+              Salvar
+            </button>
+            <button
+              onClick={inicializar}
+              type='button'
+              className='btn btn-danger'
+            >
+              Cancelar
+            </button>
+          </Stack>
         </div>
-      </Card>
     </div>
+        </div >
+      </Card >
+    </div >
   );
 }
 
