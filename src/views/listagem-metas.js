@@ -16,7 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
 import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+import { BASE_URL, BASE_URL2 } from '../config/axios';
 
 const baseURL = `${BASE_URL}/MetaFinanceira`;
 
@@ -32,6 +32,7 @@ function ListagemMetas() {
   };
 
   const [dados, setDados] = React.useState(null);
+  const [dadosAportes, setDadosAportes] = React.useState([]);
 
   async function excluir(id) {
     let data = JSON.stringify({ id });
@@ -54,13 +55,34 @@ function ListagemMetas() {
       });
   }
 
+
   React.useEffect(() => {
     axios.get(baseURL).then((response) => {
       setDados(response.data);
     });
+    axios.get(`${BASE_URL}/Aporte`).then((response) => {
+      setDadosAportes(response.data);
+    });
   }, []);
 
+  function totalInvestido(meta) {
+    if (!meta) return 0;
+
+    const toNumber = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    const aportes = (dadosAportes || []).filter((a) =>
+      a.nomeMetaFinanceira === meta.nome
+    );
+
+    const totalAportes = aportes.reduce((sum, a) => sum + toNumber(a.valor ?? a.valorAporte ?? a.valor_aporte), 0);
+    return totalAportes + meta.investimentoInicial;
+  }
+
   if (!dados) return null;
+  if (!dadosAportes) return null;
 
   return (
     <>
@@ -98,14 +120,7 @@ function ListagemMetas() {
                               : '—'}
                         </td>
                         <td>{dado.dataAlvo}</td>
-                        {/* Trocar por total investido:  */}
-                        <td>
-                          {typeof dado.investimentoInicial === 'number'
-                            ? dado.investimentoInicial.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                            : dado.investimentoInicial
-                              ? Number(dado.investimentoInicial).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                              : '—'}
-                        </td>
+                        <td>{totalInvestido(dado).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         <td>
                           <Stack spacing={1} padding={0} direction='row'>
                             <IconButton

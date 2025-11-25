@@ -228,4 +228,4 @@ function CadastroLancamento() {
     );
 }
 
-export default CadastroLancamento;
+// export default CadastroLancamento;

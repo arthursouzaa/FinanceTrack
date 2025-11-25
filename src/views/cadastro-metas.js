@@ -52,7 +52,7 @@ function CadastroMeta() {
           headers: { 'Content-Type': 'application/json' },
         })
         .then(function (response) {
-          mensagemSucesso(`Meta ${nome} cadastrado com sucesso!`);
+          mensagemSucesso(`Meta ${nome} cadastrada com sucesso!`);
           navigate(`/listagem-metas`);
         })
         .catch(function (error) {
@@ -64,7 +64,7 @@ function CadastroMeta() {
           headers: { 'Content-Type': 'application/json' },
         })
         .then(function (response) {
-          mensagemSucesso(`Meta ${nome} alterado com sucesso!`);
+          mensagemSucesso(`Meta ${nome} alterada com sucesso!`);
           navigate(`/listagem-metas`);
         })
         .catch(function (error) {
@@ -74,17 +74,25 @@ function CadastroMeta() {
   }
 
   async function buscar() {
-    if (idParam) {
-      await axios.get(`${baseURL}/${idParam}`).then((response) => {
-        setDados(response.data);
-      });
-      setId(dados.id);
-      setNome(dados.nome);
-      setValor(dados.valor);
-      setDataAlvo(dados.dataAlvo);
-      setInvestimentoInicial(dados.investimentoInicial);
+    if (!idParam) return;
+    try {
+      const response = await axios.get(`${baseURL}/${idParam}`);
+      const data = response.data;
+      setDados(data);
+      setId(data.id ?? '');
+      setNome(data.nome ?? '');
+      setValor(data.valor ?? '');
+      setDataAlvo(data.dataAlvo ?? '');
+      setInvestimentoInicial(data.investimentoInicial ?? '');
+    } catch (error) {
+      mensagemErro(error?.response?.data || 'Erro ao buscar meta');
     }
   }
+
+  useEffect(() => {
+    buscar();
+    // eslint-disable-next-line
+  }, [idParam]);
 
   return (
     <div className='container'>
