@@ -162,7 +162,7 @@ function ListagemLancamentos() {
                           ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                           : '—'}</td>
                       <td>{nomeFormaPagamento(dado)}</td>
-                      <td>{dado.parcelada ? 'Sim' : 'Não'}</td>
+                      <td>{dado.parcelada ? `${dado.quantidadeParcelas}x` : `Não`}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
@@ -173,7 +173,7 @@ function ListagemLancamentos() {
                           </IconButton>
                           <IconButton
                             aria-label='delete'
-                            onClick={() => excluir(dado.id, dado.tipo)}
+                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id, dado.tipo) : event.preventDefault()}
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -194,7 +194,7 @@ function ListagemLancamentos() {
                           ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                           : '—'}</td>
                       <td>{nomeFormaPagamento(dado)}</td>
-                      <td>{dado.parcelada ? 'Sim' : 'Não'}</td>
+                      <td>{dado.parcelada ? `${dado.quantidadeParcelas}x` : 'Não'}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
@@ -205,7 +205,7 @@ function ListagemLancamentos() {
                           </IconButton>
                           <IconButton
                             aria-label='delete'
-                            onClick={() => excluir(dado.id, dado.tipo)}
+                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id, dado.tipo) : event.preventDefault()}
                           >
                             <DeleteIcon />
                           </IconButton>

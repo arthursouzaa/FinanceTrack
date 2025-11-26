@@ -13,6 +13,7 @@ import ListagemAportes from './views/listagem-aportes';
 import ListagemFormasPagamento from './views/listagem-formasPagamento';
 import ListagemCategorias from './views/listagem-categorias';
 import ListagemLancamentos from './views/listagem-lancamentos';
+import ListagemPagamentos from './views/listagem-pagamentos';
 
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
 
@@ -33,6 +34,7 @@ function Rotas(props) {
         <Route path='/listagem-formasPagamento' element={<ListagemFormasPagamento />} />
         <Route path='/listagem-categorias' element={<ListagemCategorias />} />
         <Route path='/listagem-lancamentos' element={<ListagemLancamentos />} />
+        <Route path='/listagem-pagamentos' element={<ListagemPagamentos />} />
       </Routes>
     </BrowserRouter>
   );

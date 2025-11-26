@@ -74,7 +74,7 @@ function ListagemMetas() {
     };
 
     const aportes = (dadosAportes || []).filter((a) =>
-      a.nomeMetaFinanceira === meta.nome
+      a.idMetaFinanceira === meta.id
     );
 
     const totalAportes = aportes.reduce((sum, a) => sum + toNumber(a.valor ?? a.valorAporte ?? a.valor_aporte), 0);
@@ -131,7 +131,7 @@ function ListagemMetas() {
                             </IconButton>
                             <IconButton
                               aria-label='delete'
-                              onClick={() => excluir(dado.id)}
+                              onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id) : event.preventDefault()}
                             >
                               <DeleteIcon />
                             </IconButton>
@@ -147,7 +147,6 @@ function ListagemMetas() {
         </Card>
       </div>
       <br></br>
-      <ListagemAportes />
     </>
   );
 }

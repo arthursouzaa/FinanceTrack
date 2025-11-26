@@ -48,7 +48,7 @@ function CadastroAporte() {
                 })
                 .then(function (response) {
                     mensagemSucesso(`Aporte cadastrado com sucesso!`);
-                    navigate(`/listagem-metas`);
+                    navigate(`/listagem-aportes`);
                 })
                 .catch(function (error) {
                     mensagemErro(error.response.data);
@@ -60,7 +60,7 @@ function CadastroAporte() {
                 })
                 .then(function (response) {
                     mensagemSucesso(`Aporte alterado com sucesso!`);
-                    navigate(`/listagem-metas`);
+                    navigate(`/listagem-aportes`);
                 })
                 .catch(function (error) {
                     mensagemErro(error.response.data);
@@ -70,12 +70,18 @@ function CadastroAporte() {
 
     async function buscar() {
         if (idParam) {
-            await axios.get(`${baseURL}/${idParam}`).then((response) => {
-                setDados(response.data);
-            });
-            setId(dados.id);
-            setValor(dados.valor);
-            setIdMetaFinanceira(dados.idMetaFinanceira);
+            try {
+                const response = await axios.get(`${baseURL}/${idParam}`);
+                const dados = response.data;
+                setDados(dados);
+                // popula diretamente com os valores da resposta (normaliza id como string)
+                setId(dados.id ?? idParam);
+                setValor(dados.valor ?? '');
+                setIdMetaFinanceira(dados.idMetaFinanceira);
+                if (idMetaFinanceira != null) setIdMetaFinanceira(String(dados.idMetaFinanceira));
+            } catch (err) {
+                mensagemErro('Erro ao buscar aporte');
+            }
         }
     }
 

@@ -52,9 +52,23 @@ function ListagemAportes() {
       });
   }
 
+  const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = React.useState(null);
+
+  function nomeMetaFinanceira(lancamento) {
+    const metaFinanceira = dadosMetasFinanceiras.find((x) => x.id === lancamento.idMetaFinanceira);
+    return metaFinanceira ? metaFinanceira.nome : lancamento.idMetaFinanceira ?? '—';
+  }
+
+  useEffect(() => {
+        axios.get(`${BASE_URL}/MetaFinanceira`).then((response) => {
+            setDadosMetasFinanceiras(response.data);
+        });
+    }, []);
+
   React.useEffect(() => {
     axios.get(baseURL).then((response) => {
       setDados(response.data);
+      
     });
   }, []);
 
@@ -84,7 +98,7 @@ function ListagemAportes() {
                 <tbody>
                   {dados.map((dado) => (
                     <tr key={dado.id}>
-                      <td>{dado.nomeMetaFinanceira}</td>
+                      <td>{nomeMetaFinanceira(dado)}</td>
                       <td>
                         {typeof dado.valor === 'number'
                           ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -102,7 +116,7 @@ function ListagemAportes() {
                           </IconButton>
                           <IconButton
                             aria-label='delete'
-                            onClick={() => excluir(dado.id)}
+                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id) : event.preventDefault()}
                           >
                             <DeleteIcon />
                           </IconButton>

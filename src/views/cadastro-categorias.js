@@ -30,11 +30,11 @@ function CadastroCategoria() {
   const [valorLimite, setValorLimite] = useState('');
 
   function inicializar() {
-      setId('');
-      setTipo('Receita');
-      setNome('');
-      setLimiteGasto(false);
-      setValorLimite('');
+    setId('');
+    setTipo('Receita');
+    setNome('');
+    setLimiteGasto(false);
+    setValorLimite('');
   }
 
   async function salvar() {
@@ -123,8 +123,8 @@ function CadastroCategoria() {
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <FormGroup label='Tipo:' htmlFor='inputTipo'>
-                <div>
+              <Stack spacing={1} padding={0} direction='row'>
+                <FormGroup label='Tipo: &nbsp;' htmlFor='inputTipo' display='inline'>
                   <label>
                     <input
                       type='radio'
@@ -134,7 +134,7 @@ function CadastroCategoria() {
                       checked={tipo === 'Receita'}
                       onChange={(e) => setTipo(e.target.value)}
                     />
-                    Receita
+                    Receita &nbsp;
                   </label>
                   <label>
                     <input
@@ -145,11 +145,11 @@ function CadastroCategoria() {
                       checked={tipo === 'Despesa'}
                       onChange={(e) => setTipo(e.target.value)}
                     />
-                    Despesa
+                    Despesa &nbsp;
                   </label>
-                </div>
-              </FormGroup>
-              <FormGroup label='Nome: *' htmlFor='inputNome'>
+                </FormGroup>
+              </Stack>
+              <FormGroup label='Nome: ' htmlFor='inputNome'>
                 <input
                   type='text'
                   id='inputNome'
@@ -171,8 +171,8 @@ function CadastroCategoria() {
                     onChange={(e) => setLimiteGasto(e.target.checked)}
                     disabled={tipo === 'Receita'}
                     checked={limiteGasto}
-                    style={{ marginLeft: 3 }}                    
-                  /> 
+                    style={{ marginLeft: 3 }}
+                  />
                 </FormGroup>
               </Stack>
               <FormGroup label='Valor Limite: ' htmlFor='inputValorLimite'>
@@ -182,7 +182,7 @@ function CadastroCategoria() {
                   value={valorLimite}
                   className='form-control'
                   name='valorLimite'
-                  disabled={tipo === 'Receita'}
+                  disabled={tipo === 'Receita' && !limiteGasto}
                   onChange={(e) => setValorLimite(e.target.value)}
                 />
               </FormGroup>

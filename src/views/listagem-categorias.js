@@ -129,7 +129,7 @@ function ListagemCategorias() {
                           </IconButton>
                           <IconButton
                             aria-label='delete'
-                            onClick={() => excluir(dado.id, dado.tipo)}
+                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id, dado.tipo) : event.preventDefault()}
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -159,7 +159,7 @@ function ListagemCategorias() {
                           </IconButton>
                           <IconButton
                             aria-label='delete'
-                            onClick={() => excluir(dado.id, dado.tipo)}
+                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id, dado.tipo) : event.preventDefault()}
                           >
                             <DeleteIcon />
                           </IconButton>

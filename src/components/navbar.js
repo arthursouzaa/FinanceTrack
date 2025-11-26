@@ -34,18 +34,25 @@ function Navbar(props) {
               label='Metas Financeiras'
             />
           </ul>
-          {/* <ul className='navbar-nav'>
+          <ul className='navbar-nav'>
             <NavbarItem
               render='true'
-              href='/#'
+              href='/listagem-aportes'
+              label='Aportes'
+            />
+          </ul>
+          <ul className='navbar-nav'>
+            <NavbarItem
+              render='true'
+              href='/listagem-pagamentos'
               label='Pagamentos'
             />
-          </ul> */}
+          </ul>
           <ul className='navbar-nav'>
             <NavbarItem
               render='true'
               href='/#'
-              label='Relatorios'
+              label='Relatórios'
             />
           </ul>
           {/* <ul className='navbar-nav'>

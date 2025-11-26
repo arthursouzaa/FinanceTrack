@@ -94,7 +94,7 @@ function ListagemFormasPagamento() {
                           </IconButton>
                           <IconButton
                             aria-label='delete'
-                            onClick={() => excluir(dado.id)}
+                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id) : event.preventDefault()}
                           >
                             <DeleteIcon />
                           </IconButton>
