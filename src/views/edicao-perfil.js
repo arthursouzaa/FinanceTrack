@@ -82,7 +82,7 @@ function EdicaoPerfil() {
                     <div className='col-lg-12'>
                         <div className='bs-component'>
 
-                            <p className='text-muted'>Aqui você encontra seus dados pessoais. Você pode editá-los.</p>
+                            <p className='text-muted'>Aqui você encontra seus dados pessoais! Você pode editar suas informações 📝</p>
 
                             <FormGroup label='Nome: *' htmlFor='inputNome'>
                                 <input
@@ -116,7 +116,7 @@ function EdicaoPerfil() {
 
                             <hr />
 
-                            <p className='text-muted'>Alteração de senha</p>
+                            <p className='text-muted'>Aqui você pode alterar sua senha! Escolha uma senha segura🔒</p>
 
                             <FormGroup label='Nova senha:' htmlFor='inputNovaSenha'>
                                 <input
