@@ -31,28 +31,6 @@ function ListagemPagamentos() {
   const [dadosCategoriasDespesa, setDadosCategoriasDespesa] = React.useState([]);
   const [dadosFormasPagamento, setDadosFormasPagamento] = React.useState([]);
 
-
-  async function excluir(id) {
-    let data = JSON.stringify({ id });
-    let url = `${baseDespesas}/${id}`;
-    console.log(url);
-    await axios
-      .delete(url, data, {
-        headers: { 'Content-Type': 'application/json' },
-      })
-      .then(function (response) {
-        mensagemSucesso(`Pagamento excluído com sucesso!`);
-        setDados(
-          dados.filter((dado) => {
-            return dado.id !== id;
-          })
-        );
-      })
-      .catch(function (error) {
-        mensagemErro(`Erro ao excluir o pagamento`);
-      });
-  }
-
   function nomeCategoria(lancamento) {
     const categoria = dadosCategoriasDespesa.find((x) => x.id === lancamento.idCategoriaDespesa);
     return categoria ? categoria.nome : lancamento.idCategoriaDespesa ?? '—';
@@ -61,6 +39,21 @@ function ListagemPagamentos() {
   function nomeFormaPagamento(lancamento) {
     const formaPagamento = dadosFormasPagamento.find((x) => x.id === lancamento.idFormaPagamento);
     return formaPagamento ? formaPagamento.nome : lancamento.idFormaPagamento ?? '—';
+  }
+
+  async function pagarFatura(dados) {
+    try {
+      const updates = dados.map(async (dado) => {
+        await axios.put(`${baseDespesas}/${dado.id}`, { ...dado, paga: true }, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      });
+      await Promise.all(updates);
+      mensagemSucesso('Fatura paga com sucesso!');
+      setDados(prev => prev.map(d => dadosFiltrados.includes(d) ? { ...d, paga: true } : d));
+    } catch (error) {
+      mensagemErro('Erro ao pagar fatura');
+    }
   }
 
   React.useEffect(() => {
@@ -83,7 +76,7 @@ function ListagemPagamentos() {
   if (!dadosCategoriasDespesa) return null;
   if (!dadosFormasPagamento) return null;
 
- return (
+  return (
     <div className='container'>
       <Card title='Listagem de Pagamentos'>
         <div className='row'>
@@ -100,50 +93,38 @@ function ListagemPagamentos() {
                     <th scope='col'>Valor</th>
                     <th scope='col'>Forma de Pagamento</th>
                     <th scope='col'>Quantidade de Parcelas</th>
-                    <th scope='col' colSpan={2}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
 
                   {dadosFiltrados.map((dado) => (
-                    <tr key={dado.id}>
-                      <td>{dado.tipo}</td>
-                      <td>{dado.nome}</td>
-                      <td>{dado.data ? new Date(dado.data).toLocaleDateString('pt-BR') : '—'}</td>
-                      <td>{nomeCategoria(dado)}</td>
-                      <td>{dado.volume ? 'Fixa' : 'Única'}</td>
-                      <td>{typeof dado.valor === 'number'
-                        ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                        : dado.valor
-                          ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : '—'}</td>
-                      <td>{nomeFormaPagamento(dado)}</td>
-                      <td>{dado.quantidadeParcelas}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(dado.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id) : event.preventDefault()}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
-                    </tr>
+                    <>
+                      <tr key={dado.id}>
+                        <td>{dado.paga ? 'Pago' : 'Pendente'}</td>
+                        <td>{dado.nome}</td>
+                        <td>{dado.data ? new Date(dado.data).toLocaleDateString('pt-BR') : '—'}</td>
+                        <td>{nomeCategoria(dado)}</td>
+                        <td>{dado.volume ? 'Fixa' : 'Única'}</td>
+                        <td>{typeof dado.valor === 'number'
+                          ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                          : dado.valor
+                            ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                            : '—'}</td>
+                        <td>{nomeFormaPagamento(dado)}</td>
+                        <td>{dado.quantidadeParcelas}</td>
+                      </tr>
+                      <button type='button' className='btn btn-success' onClick={() => pagarFatura(dadosFiltrados)}>
+                        Pagar Fatura
+                      </button>
+                    </>
                   ))}
                 </tbody>
               </table>{' '}
             </div>
           </div>
         </div>
-      </Card>
-    </div>
+      </Card >
+    </div >
   );
 }
 
