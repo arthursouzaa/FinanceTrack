@@ -24,11 +24,6 @@ function EdicaoPerfil() {
     const [novaSenha, setNovaSenha] = useState('');
     const [confirmarSenha, setConfirmarSenha] = useState('');
 
-    function inicializar() {
-        setNovaSenha('');
-        setConfirmarSenha('');
-    }
-
     async function salvar() {
         if (novaSenha && novaSenha !== confirmarSenha) {
             mensagemErro('As senhas não coincidem');
@@ -147,7 +142,7 @@ function EdicaoPerfil() {
                                     Salvar
                                 </button>
                                 <button
-                                    onClick={inicializar}
+                                    onClick={buscar}
                                     type='button'
                                     className='btn btn-danger'
                                 >
