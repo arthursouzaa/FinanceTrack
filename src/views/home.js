@@ -24,7 +24,7 @@ function Home() {
                     <div className="botoes">
                         <BtnEdicao
                             render='true'
-                            href='#'
+                            href='/edicao-perfil'
                             label='Editar Perfil '
                         />
                         <BtnEdicao

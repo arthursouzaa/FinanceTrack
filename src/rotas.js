@@ -15,6 +15,7 @@ import ListagemCategorias from './views/listagem-categorias';
 import ListagemLancamentos from './views/listagem-lancamentos';
 import ListagemPagamentos from './views/listagem-pagamentos';
 
+import EdicaoPerfil from './views/edicao-perfil';
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
 
 function Rotas(props) {
@@ -22,7 +23,7 @@ function Rotas(props) {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Home />} />
-        
+
         <Route path='/cadastro-metas/:idParam?' element={<CadastroMetas />} />
         <Route path='/cadastro-aportes/:idParam?' element={<CadastroAportes />} />
         <Route path='/cadastro-formasPagamento/:idParam?' element={<CadastroFormasPagamento />} />
@@ -35,6 +36,7 @@ function Rotas(props) {
         <Route path='/listagem-categorias' element={<ListagemCategorias />} />
         <Route path='/listagem-lancamentos' element={<ListagemLancamentos />} />
         <Route path='/listagem-pagamentos' element={<ListagemPagamentos />} />
+        <Route path='/edicao-perfil' element={<EdicaoPerfil />} />
       </Routes>
     </BrowserRouter>
   );
