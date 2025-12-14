@@ -22,15 +22,18 @@ function CadastroFormaPagamento() {
   const [id, setId] = useState('');
   const [nome, setNome] = useState('');
 
-  const [dados, setDados] = React.useState([]);
+  const [dadosOriginais, setDadosOriginais] = useState(null);
 
   function inicializar() {
-    if (idParam == null) {
+    if (!idParam) {
       setId('');
       setNome('');
-    } else {
-      setId(dados.id);
-      setNome(dados.nome);
+      return;
+    }
+
+    if (dadosOriginais) {
+      setId(dadosOriginais.id ?? '');
+      setNome(dadosOriginais.nome ?? '');
     }
   }
 
@@ -65,14 +68,24 @@ function CadastroFormaPagamento() {
   }
 
   async function buscar() {
-    if (idParam) {
-      await axios.get(`${baseURL}/${idParam}`).then((response) => {
-        setDados(response.data);
-      });
-      setId(dados.id);
-      setNome(dados.nome);
+    if (!idParam) return;
+
+    try {
+      const response = await axios.get(`${baseURL}/${idParam}`);
+      const data = response.data;
+
+      setDadosOriginais(data);
+
+      setId(data.id ?? '');
+      setNome(data.nome ?? '');
+    } catch (error) {
+      mensagemErro(error?.response?.data || 'Erro ao buscar forma de pagamento');
     }
   }
+
+  useEffect(() => {
+    buscar();
+  }, [idParam]);
 
   return (
     <div className='container'>
@@ -100,6 +113,13 @@ function CadastroFormaPagamento() {
                 </button>
                 <button
                   onClick={inicializar}
+                  type='button'
+                  className='btn btn-warning'
+                >
+                  Restaurar
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
                   type='button'
                   className='btn btn-danger'
                 >

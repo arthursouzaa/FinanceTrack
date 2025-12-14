@@ -66,13 +66,24 @@ function ListagemFormasPagamento() {
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <button
-                type='button'
-                className='btn btn-warning'
-                onClick={() => cadastrar()}
-              >
-                Nova Forma de Pagamento
-              </button>
+              <p className='text-muted'>Aqui você pode cadastrar e editar suas formas de pagamento.</p>
+
+              <Stack spacing={1} direction='row'>
+                <button
+                  type='button'
+                  className='btn btn-primary'
+                  onClick={() => cadastrar()}
+                >
+                  Nova Forma de Pagamento
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
+                  type='button'
+                  className='btn btn-danger'
+                >
+                  Cancelar
+                </button>
+              </Stack>
               <table className='table table-hover'>
                 <thead>
                   <tr>

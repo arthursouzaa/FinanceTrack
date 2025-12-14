@@ -8,7 +8,7 @@ import '../custom.css';
 
 import { useNavigate } from 'react-router-dom';
 
-import ListagemAportes from './listagem-aportes';
+// import ListagemAportes from './listagem-aportes';
 
 import Stack from '@mui/material/Stack';
 import { IconButton } from '@mui/material';
@@ -55,7 +55,6 @@ function ListagemMetas() {
       });
   }
 
-
   React.useEffect(() => {
     axios.get(baseURL).then((response) => {
       setDados(response.data);
@@ -81,6 +80,14 @@ function ListagemMetas() {
     return totalAportes + meta.investimentoInicial;
   }
 
+  function totalInvestidoGeral() {
+    if (!dados || !dadosAportes) return 0;
+
+    return dados.reduce((acc, meta) => {
+      return acc + totalInvestido(meta);
+    }, 0);
+  }
+
   if (!dados) return null;
   if (!dadosAportes) return null;
 
@@ -88,16 +95,52 @@ function ListagemMetas() {
     <>
       <div className='container'>
         <Card title='Listagem de Metas Financeiras'>
+          <p className='text-muted'>Consulte as suas metas financeiras</p>
+
+          <div className='row mt-3 mb-3'>
+            <div className='col-md-4'>
+              <div
+                className='p-3'
+                style={{
+                  border: '2px solid #6f42c1',
+                  borderRadius: '10px',
+                  backgroundColor: '#fff',
+                }}
+              >
+                <h6 style={{ marginBottom: '8px', color: '#555' }}>
+                  Total Investido
+                </h6>
+
+                <h4 style={{ color: '#6f42c1', fontWeight: 'bold' }}>
+                  {totalInvestidoGeral().toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                </h4>
+              </div>
+            </div>
+          </div>
+
           <div className='row'>
             <div className='col-lg-12'>
               <div className='bs-component'>
-                <button
-                  type='button'
-                  className='btn btn-warning'
-                  onClick={() => cadastrar()}
-                >
-                  Nova Meta Financeira
-                </button>
+                <Stack spacing={1} direction='row'>
+                  <button
+                    type='button'
+                    className='btn btn-primary'
+                    onClick={() => cadastrar()}
+                  >
+                    Nova Meta
+                  </button>
+                  <button
+                    onClick={() => navigate(-1)}
+                    type='button'
+                    className='btn btn-danger'
+                  >
+                    Cancelar
+                  </button>
+                </Stack>
+
                 <table className='table table-hover'>
                   <thead>
                     <tr>

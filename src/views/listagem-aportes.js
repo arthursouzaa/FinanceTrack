@@ -29,7 +29,7 @@ function ListagemAportes() {
     navigate(`/cadastro-aportes/${id}`);
   };
 
-  const [dados, setDados] = useState(null);
+  const [dados, setDados] = useState([]);
 
   async function excluir(id) {
     let data = JSON.stringify({ id });
@@ -52,7 +52,7 @@ function ListagemAportes() {
       });
   }
 
-  const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = React.useState(null);
+  const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = React.useState([]);
 
   function nomeMetaFinanceira(lancamento) {
     const metaFinanceira = dadosMetasFinanceiras.find((x) => x.id === lancamento.idMetaFinanceira);
@@ -60,15 +60,15 @@ function ListagemAportes() {
   }
 
   useEffect(() => {
-        axios.get(`${BASE_URL}/MetaFinanceira`).then((response) => {
-            setDadosMetasFinanceiras(response.data);
-        });
-    }, []);
+    axios.get(`${BASE_URL}/MetaFinanceira`).then((response) => {
+      setDadosMetasFinanceiras(response.data);
+    });
+  }, []);
 
   React.useEffect(() => {
     axios.get(baseURL).then((response) => {
       setDados(response.data);
-      
+
     });
   }, []);
 
@@ -77,16 +77,26 @@ function ListagemAportes() {
   return (
     <div className='container'>
       <Card title='Listagem de Aportes'>
+        <p className='text-muted'>Consulte os seus aportes</p>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <button
-                type='button'
-                className='btn btn-warning'
-                onClick={() => cadastrar()}
-              >
-                Novo Aporte
-              </button>
+              <Stack spacing={1} direction='row'>
+                <button
+                  type='button'
+                  className='btn btn-primary'
+                  onClick={() => cadastrar()}
+                >
+                  Novo Aporte
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
+                  type='button'
+                  className='btn btn-danger'
+                >
+                  Cancelar
+                </button>
+              </Stack>
               <table className='table table-hover'>
                 <thead>
                   <tr>

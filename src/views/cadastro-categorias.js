@@ -17,7 +17,6 @@ const baseDespesas = `${BASE_URL2}/CategoriaDespesa`;
 
 function CadastroCategoria() {
   const { idParam } = useParams();
-
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -29,30 +28,46 @@ function CadastroCategoria() {
   const [limiteGasto, setLimiteGasto] = useState(false);
   const [valorLimite, setValorLimite] = useState('');
 
+  const [dadosOriginais, setDadosOriginais] = useState(null);
+
   function inicializar() {
-    setId('');
-    setTipo('Receita');
-    setNome('');
-    setLimiteGasto(false);
-    setValorLimite('');
+    if (!idParam) {
+      setId('');
+      setTipo('Receita');
+      setNome('');
+      setLimiteGasto(false);
+      setValorLimite('');
+      return;
+    }
+
+    if (dadosOriginais) {
+      setId(dadosOriginais.id ?? '');
+      setTipo(dadosOriginais.tipo ?? '');
+      setNome(dadosOriginais.nome ?? '');
+      setLimiteGasto(dadosOriginais.limiteGasto ?? false);
+      setValorLimite(dadosOriginais.valorLimite ?? '');
+    }
   }
 
   async function salvar() {
-    let data = { id, tipo, nome, limiteGasto, valorLimite };
+    const data = {
+      id,
+      tipo,
+      nome,
+      limiteGasto,
+      valorLimite: limiteGasto ? valorLimite : null
+    };
+
     try {
       if (!idParam) {
-        if (tipo === 'Receita') {
-          await axios.post(baseReceitas, data, { headers: { 'Content-Type': 'application/json' } });
-        } else {
-          await axios.post(baseDespesas, data, { headers: { 'Content-Type': 'application/json' } });
-        }
+        tipo === 'Receita'
+          ? await axios.post(baseReceitas, data)
+          : await axios.post(baseDespesas, data);
         mensagemSucesso('Categoria cadastrada com sucesso!');
       } else {
-        if (tipo === 'Receita') {
-          await axios.put(`${baseReceitas}/${idParam}`, data, { headers: { 'Content-Type': 'application/json' } });
-        } else {
-          await axios.put(`${baseDespesas}/${idParam}`, data, { headers: { 'Content-Type': 'application/json' } });
-        }
+        tipo === 'Receita'
+          ? await axios.put(`${baseReceitas}/${idParam}`, data)
+          : await axios.put(`${baseDespesas}/${idParam}`, data);
         mensagemSucesso('Categoria alterada com sucesso!');
       }
       navigate('/listagem-categorias');
@@ -62,53 +77,27 @@ function CadastroCategoria() {
   }
 
   async function buscar() {
-    if (idParam) {
-      try {
-        if (tipoQuery === 'Despesa') {
-          const resp = await axios.get(`${baseDespesas}/${idParam}`);
-          const data = resp.data;
-          setId(data.id ?? idParam);
-          setTipo('Despesa');
-          setNome(data.nome ?? '');
-          setLimiteGasto(data.limiteGasto ?? false);
-          setValorLimite(data.valorLimite ?? '');
-          return;
-        }
-        if (tipoQuery === 'Receita') {
-          const resp = await axios.get(`${baseReceitas}/${idParam}`);
-          const data = resp.data;
-          setId(data.id ?? idParam);
-          setTipo('Receita');
-          setNome(data.nome ?? '');
-          setLimiteGasto(false);
-          setValorLimite('');
-          return;
-        }
+    if (!idParam) return;
 
-        try {
-          const response = await axios.get(`${baseReceitas}/${idParam}`);
-          const data = response.data;
-          setId(data.id ?? idParam);
-          setTipo('Receita');
-          setNome(data.nome ?? '');
-          setLimiteGasto(false);
-          setValorLimite('');
-        } catch (errReceita) {
-          try {
-            const response = await axios.get(`${baseDespesas}/${idParam}`);
-            const data = response.data;
-            setId(data.id ?? idParam);
-            setTipo('Despesa');
-            setNome(data.nome ?? '');
-            setLimiteGasto(data.limiteGasto ?? false);
-            setValorLimite(data.valorLimite ?? '');
-          } catch (errDespesa) {
-            mensagemErro('Categoria não encontrada');
-          }
-        }
-      } catch (err) {
-        mensagemErro('Erro ao buscar categoria');
+    try {
+      let data;
+
+      if (tipoQuery === 'Despesa') {
+        const resp = await axios.get(`${baseDespesas}/${idParam}`);
+        data = { ...resp.data, tipo: 'Despesa' };
+      } else {
+        const resp = await axios.get(`${baseReceitas}/${idParam}`);
+        data = { ...resp.data, tipo: 'Receita' };
       }
+
+      setDadosOriginais(data);
+      setId(data.id ?? '');
+      setTipo(data.tipo);
+      setNome(data.nome ?? '');
+      setLimiteGasto(data.limiteGasto ?? false);
+      setValorLimite(data.valorLimite ?? '');
+    } catch {
+      mensagemErro('Erro ao buscar categoria');
     }
   }
 
@@ -117,93 +106,94 @@ function CadastroCategoria() {
     // eslint-disable-next-line
   }, [idParam, tipoQuery]);
 
+  useEffect(() => {
+    if (tipo === 'Receita') {
+      setLimiteGasto(false);
+      setValorLimite('');
+    }
+  }, [tipo]);
+
   return (
     <div className='container'>
       <Card title='Cadastro de Categoria'>
-        <div className='row'>
-          <div className='col-lg-12'>
-            <div className='bs-component'>
-              <Stack spacing={1} padding={0} direction='row'>
-                <FormGroup label='Tipo: &nbsp;' htmlFor='inputTipo' display='inline'>
-                  <label>
-                    <input
-                      type='radio'
-                      id='inputTipo'
-                      name='tipo'
-                      value='Receita'
-                      checked={tipo === 'Receita'}
-                      onChange={(e) => setTipo(e.target.value)}
-                    />
-                    Receita &nbsp;
-                  </label>
-                  <label>
-                    <input
-                      type='radio'
-                      id='inputTipoDespesa'
-                      name='tipo'
-                      value='Despesa'
-                      checked={tipo === 'Despesa'}
-                      onChange={(e) => setTipo(e.target.value)}
-                    />
-                    Despesa &nbsp;
-                  </label>
-                </FormGroup>
-              </Stack>
-              <FormGroup label='Nome: ' htmlFor='inputNome'>
+        <div className='bs-component'>
+          <Stack spacing={1} direction='row'>
+            <FormGroup label='Tipo:' display='inline'>
+              <label>
                 <input
-                  type='text'
-                  id='inputNome'
-                  value={nome}
-                  className='form-control'
-                  name='nome'
-                  onChange={(e) => setNome(e.target.value)}
+                  type='radio'
+                  name='tipo'
+                  value='Receita'
+                  checked={tipo === 'Receita'}
+                  onChange={(e) => {
+                    setTipo(e.target.value);
+                    setLimiteGasto(false);
+                    setValorLimite('');
+                  }}
                 />
-              </FormGroup>
-              <Stack spacing={1} padding={0} direction='row' className='form-switch'>
-                <FormGroup label='Limite de Gasto: &nbsp;' htmlFor='inputLimiteGasto'>
-                  <input
-                    type='checkbox'
-                    className='form-check-input'
-                    role='switch'
-                    id='inputLimiteGasto'
-                    value={limiteGasto}
-                    name='limiteGasto'
-                    onChange={(e) => setLimiteGasto(e.target.checked)}
-                    disabled={tipo === 'Receita'}
-                    checked={limiteGasto}
-                    style={{ marginLeft: 3 }}
-                  />
-                </FormGroup>
-              </Stack>
-              <FormGroup label='Valor Limite: ' htmlFor='inputValorLimite'>
+                Receita
+              </label>
+              &nbsp;&nbsp;
+              <label>
                 <input
-                  type='text'
-                  id='inputValorLimite'
-                  value={valorLimite}
-                  className='form-control'
-                  name='valorLimite'
-                  disabled={tipo === 'Receita' && !limiteGasto}
-                  onChange={(e) => setValorLimite(e.target.value)}
+                  type='radio'
+                  name='tipo'
+                  value='Despesa'
+                  checked={tipo === 'Despesa'}
+                  onChange={(e) => setTipo(e.target.value)}
                 />
-              </FormGroup>
-              <Stack spacing={1} padding={1} direction='row'>
-                <button
-                  onClick={salvar}
-                  type='button'
-                  className='btn btn-success'
-                >
-                  Salvar
-                </button>
-                <button
-                  onClick={inicializar}
-                  type='button'
-                  className='btn btn-danger'
-                >
-                  Cancelar
-                </button>
-              </Stack>
-            </div>
-          </div>
+                Despesa
+              </label>
+            </FormGroup>
+          </Stack>
+
+          <FormGroup label='Nome:'>
+            <input
+              className='form-control'
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+            />
+          </FormGroup>
+
+          <Stack spacing={1} padding={0} direction='row' className='form-switch'>
+            <FormGroup label='Limite de Gasto: &nbsp;' htmlFor='inputLimiteGasto'>
+              <input
+                type='checkbox'
+                className='form-check-input'
+                role='switch'
+                id='inputLimiteGasto'
+                name='limiteGasto'
+                checked={limiteGasto}
+                disabled={tipo === 'Receita'}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setLimiteGasto(checked);
+                  if (!checked) {
+                    setValorLimite('');
+                  }
+                }}
+                style={{ marginLeft: 3 }}
+              />
+            </FormGroup>
+          </Stack>
+
+          <FormGroup label='Valor Limite: ' htmlFor='inputValorLimite'>
+            <input
+              type='text'
+              id='inputValorLimite'
+              value={valorLimite}
+              className='form-control'
+              name='valorLimite'
+              disabled={tipo !== 'Despesa' || !limiteGasto}
+              onChange={(e) => setValorLimite(e.target.value)}
+            />
+          </FormGroup>
+
+          <Stack spacing={1} padding={1} direction='row'>
+            <button className='btn btn-success' onClick={salvar}>Salvar</button>
+            <button className='btn btn-warning' onClick={inicializar}>Restaurar</button>
+            <button className='btn btn-danger' onClick={() => navigate(-1)}>Cancelar</button>
+          </Stack>
         </div>
       </Card>
     </div>

@@ -14,8 +14,8 @@ import ListagemFormasPagamento from './views/listagem-formasPagamento';
 import ListagemCategorias from './views/listagem-categorias';
 import ListagemLancamentos from './views/listagem-lancamentos';
 import ListagemPagamentos from './views/listagem-pagamentos';
+import ListagemPerfil from './views/listagem-perfil';
 
-import EdicaoPerfil from './views/edicao-perfil';
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
 
 function Rotas(props) {
@@ -36,7 +36,7 @@ function Rotas(props) {
         <Route path='/listagem-categorias' element={<ListagemCategorias />} />
         <Route path='/listagem-lancamentos' element={<ListagemLancamentos />} />
         <Route path='/listagem-pagamentos' element={<ListagemPagamentos />} />
-        <Route path='/edicao-perfil' element={<EdicaoPerfil />} />
+        <Route path='/listagem-perfil' element={<ListagemPerfil />} />
       </Routes>
     </BrowserRouter>
   );

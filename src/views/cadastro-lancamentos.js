@@ -17,7 +17,6 @@ const baseDespesas = `${BASE_URL2}/Despesa`;
 
 function CadastroLancamento() {
   const { idParam } = useParams();
-
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -31,143 +30,148 @@ function CadastroLancamento() {
   const [volume, setVolume] = useState(false);
   const [valor, setValor] = useState('');
   const [idFormaPagamento, setIdFormaPagamento] = useState('');
-  const [parcelada, setParcelada] = useState('');
+  const [parcelada, setParcelada] = useState(false);
   const [quantidadeParcelas, setQuantidadeParcelas] = useState('');
 
-  function inicializar() {
-    setId('');
-    setTipo('Receita');
-    setNome('');
-    setData('');
-    setIdCategoria('');
-    setVolume(false);
-    setValor('');
-    setIdFormaPagamento('');
-    setParcelada(false);
-    setQuantidadeParcelas('');
+  const [dadosOriginais, setDadosOriginais] = useState(null);
+  const [formasPagamento, setFormasPagamento] = useState(null);
+  const [categoriasReceita, setCategoriasReceita] = useState([]);
+  const [categoriasDespesa, setCategoriasDespesa] = useState([]);
+
+  function restaurarDados() {
+    if (!dadosOriginais) {
+      setId('');
+      setTipo('Receita');
+      setNome('');
+      setData('');
+      setIdCategoria('');
+      setVolume(false);
+      setValor('');
+      setIdFormaPagamento('');
+      setParcelada(false);
+      setQuantidadeParcelas('');
+      return;
+    }
+
+    setId(dadosOriginais.id ?? '');
+    setTipo(dadosOriginais.tipo ?? tipo);
+    setNome(dadosOriginais.nome ?? '');
+    setData(dadosOriginais.data ?? '');
+    setIdCategoria(dadosOriginais.idCategoria ?? '');
+    setVolume(dadosOriginais.volume ?? false);
+    setValor(dadosOriginais.valor ?? '');
+    setIdFormaPagamento(dadosOriginais.idFormaPagamento ?? '');
+    setParcelada(dadosOriginais.parcelada ?? false);
+    setQuantidadeParcelas(dadosOriginais.quantidadeParcelas ?? '');
   }
 
   async function salvar() {
-    let payload = { id, tipo, nome, data, idCategoria, volume, valor, idFormaPagamento, parcelada, quantidadeParcelas };
+    const payload = {
+      id,
+      tipo,
+      nome,
+      data,
+      idCategoria: idCategoria || null,
+      volume,
+      valor,
+      idFormaPagamento: tipo === 'Despesa' ? idFormaPagamento || null : null,
+      parcelada: tipo === 'Despesa' ? parcelada : false,
+      quantidadeParcelas:
+        tipo === 'Despesa' && parcelada ? quantidadeParcelas : null
+    };
+
     try {
       if (!idParam) {
-        if (tipo === 'Receita') {
-          await axios.post(baseReceitas, payload, { headers: { 'Content-Type': 'application/json' } });
-        } else {
-          await axios.post(baseDespesas, payload, { headers: { 'Content-Type': 'application/json' } });
-        }
+        await axios.post(
+          tipo === 'Receita' ? baseReceitas : baseDespesas,
+          payload
+        );
         mensagemSucesso('Lançamento cadastrado com sucesso!');
       } else {
-        if (tipo === 'Receita') {
-          await axios.put(`${baseReceitas}/${idParam}`, payload, { headers: { 'Content-Type': 'application/json' } });
-        } else {
-          await axios.put(`${baseDespesas}/${idParam}`, payload, { headers: { 'Content-Type': 'application/json' } });
-        }
+        await axios.put(
+          `${tipo === 'Receita' ? baseReceitas : baseDespesas}/${idParam}`,
+          payload
+        );
         mensagemSucesso('Lançamento alterado com sucesso!');
       }
+
       navigate('/listagem-lancamentos');
     } catch (error) {
       mensagemErro(error?.response?.data || 'Erro ao salvar lançamento');
     }
   }
 
-  async function buscar() {
-    const normalizeIdCategoria = (data) => {
-      const val = data?.idCategoria ?? data?.idCategoriaReceita ?? data?.idCategoriaDespesa ?? '';
-      return val === null || val === undefined ? '' : String(val);
-    };
+  async function buscarLancamento() {
+    if (!idParam) return;
 
-    if (idParam) {
-      try {
-        if (tipoQuery === 'Despesa') {
-          const resp = await axios.get(`${baseDespesas}/${idParam}`);
-          const data = resp.data;
-          setId(data.id ?? idParam);
-          setTipo('Despesa');
-          setNome(data.nome ?? '');
-          setData(data.data ?? '');
-          setIdCategoria(normalizeIdCategoria(data));
-          setVolume(data.volume ?? false);
-          setValor(data.valor ?? '');
-          setIdFormaPagamento(data.idFormaPagamento ?? '');
-          setParcelada(data.parcelada ?? false);
-          setQuantidadeParcelas(data.quantidadeParcelas ?? '');
-          return;
-        }
-        if (tipoQuery === 'Receita') {
-          const resp = await axios.get(`${baseReceitas}/${idParam}`);
-          const data = resp.data;
-          setId(data.id ?? idParam);
-          setTipo('Receita');
-          setNome(data.nome ?? '');
-          setData(data.data ?? '');
-          setValor(data.valor ?? '');
-          setIdCategoria(normalizeIdCategoria(data));
-          setVolume(data.volume ?? false);
-          return;
-        }
+    try {
+      const endpoint =
+        tipoQuery === 'Despesa'
+          ? baseDespesas
+          : tipoQuery === 'Receita'
+            ? baseReceitas
+            : null;
 
-        try {
-          const response = await axios.get(`${baseReceitas}/${idParam}`);
-          const data = response.data;
-          setId(data.id ?? idParam);
-          setTipo('Receita');
-          setNome(data.nome ?? '');
-          setData(data.data ?? '');
-          setIdCategoria(data.idCategoria ?? '');
-          setVolume(data.volume ?? false);
-          setValor(data.valor ?? '');
-          setIdFormaPagamento(data.idFormaPagamento ?? '');
-          setParcelada(data.parcelada ?? false);
-          setQuantidadeParcelas(data.quantidadeParcelas ?? '');
-        } catch (errReceita) {
-          try {
-            const response = await axios.get(`${baseDespesas}/${idParam}`);
-            const data = response.data;
-            setId(data.id ?? idParam);
-            setTipo('Despesa');
-            setNome(data.nome ?? '');
-            setData(data.data ?? '');
-            setIdCategoria(data.idCategoria ?? '');
-            setVolume(data.volume ?? false);
-            setValor(data.valor ?? '');
-            setIdFormaPagamento(data.idFormaPagamento ?? '');
-            setParcelada(data.parcelada ?? false);
-            setQuantidadeParcelas(data.quantidadeParcelas ?? '');
-          } catch (errDespesa) {
-            mensagemErro('Lançamento não encontrado');
-          }
-        }
-      } catch (err) {
-        mensagemErro('Erro ao buscar lançamento');
-      }
+      const response = await axios.get(
+        endpoint ? `${endpoint}/${idParam}` : `${baseReceitas}/${idParam}`
+      );
+
+      const data = response.data;
+
+      const snapshot = {
+        ...data,
+        tipo: tipoQuery ?? 'Receita',
+        idCategoria: data.idCategoria ?? data.idCategoriaReceita ?? data.idCategoriaDespesa ?? ''
+      };
+
+      setDadosOriginais(snapshot);
+
+      setId(snapshot.id ?? '');
+      setTipo(snapshot.tipo);
+      setNome(snapshot.nome ?? '');
+      setData(snapshot.data ?? '');
+      setIdCategoria(snapshot.idCategoria ? String(snapshot.idCategoria) : '');
+      setVolume(snapshot.volume ?? false);
+      setValor(snapshot.valor ?? '');
+      setIdFormaPagamento(snapshot.idFormaPagamento ?? '');
+      setParcelada(snapshot.parcelada ?? false);
+      setQuantidadeParcelas(snapshot.quantidadeParcelas ?? '');
+    } catch {
+      mensagemErro('Erro ao buscar lançamento');
     }
   }
 
-  const [dadosFormasPagamento, setDadosFormasPagamento] = React.useState(null);
-  const [dadosCategoriasReceita, setDadosCategoriasReceita] = React.useState([]);
-  const [dadosCategoriasDespesa, setDadosCategoriasDespesa] = React.useState([]);
+  async function carregarListas() {
+    try {
+      const [fp, cr, cd] = await Promise.all([
+        axios.get(`${BASE_URL}/FormaPagamento`),
+        axios.get(`${BASE_URL2}/CategoriaReceita`),
+        axios.get(`${BASE_URL2}/CategoriaDespesa`)
+      ]);
+
+      setFormasPagamento(fp.data);
+      setCategoriasReceita(cr.data);
+      setCategoriasDespesa(cd.data);
+    } catch {
+      mensagemErro('Erro ao carregar dados auxiliares');
+    }
+  }
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/FormaPagamento`).then((response) => {
-      setDadosFormasPagamento(response.data);
-    });
-    axios.get(`${BASE_URL2}/CategoriaReceita`).then((response) => {
-      setDadosCategoriasReceita(response.data);
-    });
-    axios.get(`${BASE_URL2}/CategoriaDespesa`).then((response) => {
-      setDadosCategoriasDespesa(response.data);
-    });
+    carregarListas();
+    buscarLancamento();
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
-    buscar();
-    // eslint-disable-next-line
-  }, [idParam, tipoQuery]);
+    if (tipo === 'Receita') {
+      setIdFormaPagamento('');
+      setParcelada(false);
+      setQuantidadeParcelas('');
+    }
+  }, [tipo]);
 
-  if (!dadosFormasPagamento) return null;
-  if (!dadosCategoriasReceita) return null;
-  if (!dadosCategoriasDespesa) return null;
+  if (!formasPagamento) return null;
 
   return (
     <div className='container'>
@@ -175,156 +179,123 @@ function CadastroLancamento() {
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <Stack spacing={1} padding={0} direction='row'>
-                <FormGroup label='Tipo: &nbsp;' htmlFor='inputTipo' display='inline'>
-                  <label>
-                    <input
-                      type='radio'
-                      id='inputTipo'
-                      name='tipo'
-                      value='Receita'
-                      checked={tipo === 'Receita'}
-                      onChange={(e) => setTipo(e.target.value)}
-                    />
-                    Receita &nbsp;
-                  </label>
-                  <label>
-                    <input
-                      type='radio'
-                      id='inputTipoDespesa'
-                      name='tipo'
-                      value='Despesa'
-                      checked={tipo === 'Despesa'}
-                      onChange={(e) => setTipo(e.target.value)}
-                    />
-                    Despesa &nbsp;
-                  </label>
-                </FormGroup>
-              </Stack>
-              <FormGroup label='Nome: ' htmlFor='inputNome'>
+
+              <FormGroup label='Tipo:'>
+                <label>
+                  <input
+                    type='radio'
+                    value='Receita'
+                    checked={tipo === 'Receita'}
+                    onChange={(e) => setTipo(e.target.value)}
+                  /> Receita
+                </label>
+                &nbsp;&nbsp;
+                <label>
+                  <input
+                    type='radio'
+                    value='Despesa'
+                    checked={tipo === 'Despesa'}
+                    onChange={(e) => setTipo(e.target.value)}
+                  /> Despesa
+                </label>
+              </FormGroup>
+
+              <FormGroup label='Nome:'>
                 <input
-                  type='text'
-                  id='inputNome'
-                  value={nome}
                   className='form-control'
-                  name='nome'
+                  value={nome}
                   onChange={(e) => setNome(e.target.value)}
                 />
               </FormGroup>
-              <FormGroup label='Data: ' htmlFor='inputData'>
+
+              <FormGroup label='Data:'>
                 <input
                   type='date'
-                  id='inputData'
-                  value={data}
                   className='form-control'
-                  name='data'
+                  value={data}
                   onChange={(e) => setData(e.target.value)}
                 />
               </FormGroup>
-              <FormGroup label='Categoria: ' htmlFor='selectCategoria'>
+
+              <FormGroup label='Categoria:'>
                 <select
-                  id='selectCategoria'
                   className='form-select'
                   value={idCategoria}
                   onChange={(e) => setIdCategoria(e.target.value)}
                 >
-                  <option value=''> </option>
-                  {(tipo === 'Receita' ? dadosCategoriasReceita : dadosCategoriasDespesa).map((categoria) => (
-                    <option key={categoria.id} value={categoria.id}>
-                      {categoria.nome}
-                    </option>
-                  ))}
+                  <option value=''></option>
+                  {(tipo === 'Receita' ? categoriasReceita : categoriasDespesa)
+                    .map(c => (
+                      <option key={c.id} value={c.id}>{c.nome}</option>
+                    ))}
                 </select>
               </FormGroup>
-              <Stack spacing={1} padding={0} direction='row' className='form-switch'>
-                <FormGroup label='Volume: &nbsp;' htmlFor='inputVolume'>
-                  <input
-                    type='checkbox'
-                    className='form-check-input'
-                    role='switch'
-                    id='inputVolume'
-                    value={volume}
-                    name='volume'
-                    onChange={(e) => setVolume(e.target.checked)}
-                    checked={volume}
-                    style={{ marginLeft: 3 }}
-                  /> Fixa
-                </FormGroup>
-              </Stack>
-              <FormGroup label='Valor: ' htmlFor='inputValor'>
+
+              <FormGroup label='Valor:'>
                 <input
-                  type='text'
-                  id='inputValor'
-                  value={valor}
+                  type='number'
                   className='form-control'
-                  name='valor'
+                  value={valor}
                   onChange={(e) => setValor(e.target.value)}
                 />
               </FormGroup>
-              <FormGroup label='Forma de Pagamento: ' htmlFor='selectFormaPagamento'>
+
+              <FormGroup label='Forma de Pagamento:'>
                 <select
-                  id='selectFormaPagamento'
                   className='form-select'
                   value={idFormaPagamento}
                   onChange={(e) => setIdFormaPagamento(e.target.value)}
                   disabled={tipo === 'Receita'}
                 >
-                  <option value=''> </option>
-                  {dadosFormasPagamento.map((dado) => (
-                    <option key={dado.id} value={dado.id}>
-                      {dado.nome}
-                    </option>
+                  <option value=''></option>
+                  {formasPagamento.map(fp => (
+                    <option key={fp.id} value={fp.id}>{fp.nome}</option>
                   ))}
                 </select>
               </FormGroup>
+
               <Stack spacing={1} padding={0} direction='row' className='form-switch'>
-                <FormGroup label='Parcelada: &nbsp;' htmlFor='inputParcelada'>
+                <FormGroup label='Parcelada:' htmlFor='inputParcelada'>
                   <input
                     type='checkbox'
                     className='form-check-input'
                     role='switch'
                     id='inputParcelada'
-                    value={parcelada}
-                    name='parcelada'
-                    onChange={(e) => setParcelada(e.target.checked)}
                     checked={parcelada}
                     disabled={tipo === 'Receita'}
+                    onChange={(e) => {
+                      setParcelada(e.target.checked);
+                      if (!e.target.checked) {
+                        setQuantidadeParcelas('');
+                      }
+                    }}
                     style={{ marginLeft: 3 }}
                   />
                 </FormGroup>
               </Stack>
-              <FormGroup label='Quantidade de Parcelas: ' htmlFor='inputQuantidadeParcelas'>
+
+              <FormGroup label='Quantidade de Parcelas:' htmlFor='inputQuantidadeParcelas'>
                 <input
                   type='number'
+                  min='1'
                   id='inputQuantidadeParcelas'
-                  value={quantidadeParcelas}
                   className='form-control'
-                  name='quantidadeParcelas'
-                  onChange={(e) => setQuantidadeParcelas(e.target.value)}
+                  value={quantidadeParcelas}
                   disabled={tipo === 'Receita' || !parcelada}
+                  onChange={(e) => setQuantidadeParcelas(e.target.value)}
                 />
               </FormGroup>
+
               <Stack spacing={1} padding={1} direction='row'>
-                <button
-                  onClick={salvar}
-                  type='button'
-                  className='btn btn-success'
-                >
-                  Salvar
-                </button>
-                <button
-                  onClick={inicializar}
-                  type='button'
-                  className='btn btn-danger'
-                >
-                  Cancelar
-                </button>
+                <button onClick={salvar} className='btn btn-success'>Salvar</button>
+                <button onClick={restaurarDados} className='btn btn-warning'>Restaurar</button>
+                <button onClick={() => navigate(-1)} className='btn btn-danger'>Cancelar</button>
               </Stack>
             </div>
           </div>
-        </div >
-      </Card >
-    </div >
+        </div>
+      </Card>
+    </div>
   );
 }
 

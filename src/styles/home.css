@@ -73,3 +73,33 @@
     background-color: #8a26e0;
     cursor: pointer;
 }
+
+.resumo-box {
+  border: 2px solid #7b2ff7;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+  text-align: center;
+}
+
+.resumo-box h6 {
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.resumo-box h4 {
+  font-weight: bold;
+  margin: 0;
+}
+
+.resumo-box .saldo {
+  color: #00a8ff;
+}
+
+.resumo-box .entrada {
+  color: #00c853;
+}
+
+.resumo-box .saida {
+  color: #ff3d00;
+}

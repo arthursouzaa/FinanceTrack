@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
-
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
 
@@ -15,7 +14,6 @@ import { BASE_URL } from '../config/axios';
 
 function CadastroAporte() {
     const { idParam } = useParams();
-
     const navigate = useNavigate();
 
     const baseURL = `${BASE_URL}/Aporte`;
@@ -24,80 +22,86 @@ function CadastroAporte() {
     const [valor, setValor] = useState('');
     const [idMetaFinanceira, setIdMetaFinanceira] = useState('');
 
-    const [dados, setDados] = React.useState([]);
+    const [dadosOriginais, setDadosOriginais] = useState(null);
+    const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = useState(null);
 
-    function inicializar() {
-        if (idParam == null) {
+    function restaurarDados() {
+        if (!dadosOriginais) {
             setId('');
             setValor('');
             setIdMetaFinanceira('');
-        } else {
-            setId(dados.id);
-            setValor(dados.valor);
-            setIdMetaFinanceira(dados.idMetaFinanceira);
+            return;
         }
+
+        setId(dadosOriginais.id ?? '');
+        setValor(dadosOriginais.valor ?? '');
+        setIdMetaFinanceira(
+            dadosOriginais.idMetaFinanceira
+                ? String(dadosOriginais.idMetaFinanceira)
+                : ''
+        );
     }
 
     async function salvar() {
-        let data = { id, valor, idMetaFinanceira };
-        data = JSON.stringify(data);
-        if (idParam == null) {
-            await axios
-                .post(baseURL, data, {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then(function (response) {
-                    mensagemSucesso(`Aporte cadastrado com sucesso!`);
-                    navigate(`/listagem-aportes`);
-                })
-                .catch(function (error) {
-                    mensagemErro(error.response.data);
-                });
-        } else {
-            await axios
-                .put(`${baseURL}/${idParam}`, data, {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then(function (response) {
-                    mensagemSucesso(`Aporte alterado com sucesso!`);
-                    navigate(`/listagem-aportes`);
-                })
-                .catch(function (error) {
-                    mensagemErro(error.response.data);
-                });
-        }
-    }
+        const data = JSON.stringify({
+            id,
+            valor,
+            idMetaFinanceira: idMetaFinanceira || null
+        });
 
-    async function buscar() {
-        if (idParam) {
-            try {
-                const response = await axios.get(`${baseURL}/${idParam}`);
-                const dados = response.data;
-                setDados(dados);
-                // popula diretamente com os valores da resposta (normaliza id como string)
-                setId(dados.id ?? idParam);
-                setValor(dados.valor ?? '');
-                setIdMetaFinanceira(dados.idMetaFinanceira);
-                if (idMetaFinanceira != null) setIdMetaFinanceira(String(dados.idMetaFinanceira));
-            } catch (err) {
-                mensagemErro('Erro ao buscar aporte');
+        try {
+            if (!idParam) {
+                await axios.post(baseURL, data, {
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                mensagemSucesso('Aporte cadastrado com sucesso!');
+            } else {
+                await axios.put(`${baseURL}/${idParam}`, data, {
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                mensagemSucesso('Aporte alterado com sucesso!');
             }
+
+            navigate('/listagem-aportes');
+        } catch (error) {
+            mensagemErro(error?.response?.data || 'Erro ao salvar aporte');
         }
     }
 
-    const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = React.useState(null);
+    async function buscarAporte() {
+        if (!idParam) return;
+
+        try {
+            const response = await axios.get(`${baseURL}/${idParam}`);
+            const data = response.data;
+
+            setDadosOriginais(data);
+
+            setId(data.id ?? '');
+            setValor(data.valor ?? '');
+            setIdMetaFinanceira(
+                data.idMetaFinanceira ? String(data.idMetaFinanceira) : ''
+            );
+        } catch (error) {
+            mensagemErro('Erro ao buscar aporte');
+        }
+    }
+
+    async function buscarMetasFinanceiras() {
+        try {
+            const response = await axios.get(`${BASE_URL}/MetaFinanceira`);
+            setDadosMetasFinanceiras(response.data);
+        } catch (error) {
+            mensagemErro('Erro ao carregar metas financeiras');
+        }
+    }
 
     useEffect(() => {
-        axios.get(`${BASE_URL}/MetaFinanceira`).then((response) => {
-            setDadosMetasFinanceiras(response.data);
-        });
+        buscarMetasFinanceiras();
+        buscarAporte();
+        // eslint-disable-next-line
     }, []);
 
-    useEffect(() => {
-        buscar(); // eslint-disable-next-line
-    }, [id]);
-
-    if (!dados) return null;
     if (!dadosMetasFinanceiras) return null;
 
     return (
@@ -106,34 +110,33 @@ function CadastroAporte() {
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>
+
                             <FormGroup label='Valor: *' htmlFor='inputValor'>
                                 <input
-                                    type='valor'
+                                    type='number'
                                     id='inputValor'
                                     value={valor}
                                     className='form-control'
-                                    name='valor'
                                     onChange={(e) => setValor(e.target.value)}
                                 />
                             </FormGroup>
-                            <FormGroup label='Meta Financeira: ' htmlFor='selectMetaFinanceira'>
+
+                            <FormGroup label='Meta Financeira:' htmlFor='selectMetaFinanceira'>
                                 <select
                                     className='form-select'
-                                    id='selectMetasFinanceiras'
-                                    name='idMetaFinanceira'
+                                    id='selectMetaFinanceira'
                                     value={idMetaFinanceira}
                                     onChange={(e) => setIdMetaFinanceira(e.target.value)}
                                 >
-                                    <option key='0' value='0'>
-                                        {' '}
-                                    </option>
-                                    {dadosMetasFinanceiras.map((dado) => (
-                                        <option key={dado.id} value={dado.id}>
-                                            {dado.nome}
+                                    <option value=''></option>
+                                    {dadosMetasFinanceiras.map((meta) => (
+                                        <option key={meta.id} value={meta.id}>
+                                            {meta.nome}
                                         </option>
                                     ))}
                                 </select>
                             </FormGroup>
+
                             <Stack spacing={1} padding={1} direction='row'>
                                 <button
                                     onClick={salvar}
@@ -142,8 +145,17 @@ function CadastroAporte() {
                                 >
                                     Salvar
                                 </button>
+
                                 <button
-                                    onClick={inicializar}
+                                    onClick={restaurarDados}
+                                    type='button'
+                                    className='btn btn-warning'
+                                >
+                                    Restaurar
+                                </button>
+
+                                <button
+                                    onClick={() => navigate(-1)}
                                     type='button'
                                     className='btn btn-danger'
                                 >

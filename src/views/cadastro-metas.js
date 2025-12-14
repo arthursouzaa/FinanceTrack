@@ -14,7 +14,6 @@ import { BASE_URL } from '../config/axios';
 
 function CadastroMeta() {
   const { idParam } = useParams();
-
   const navigate = useNavigate();
 
   const baseURL = `${BASE_URL}/MetaFinanceira`;
@@ -25,60 +24,56 @@ function CadastroMeta() {
   const [dataAlvo, setDataAlvo] = useState('');
   const [investimentoInicial, setInvestimentoInicial] = useState('');
 
-  const [dados, setDados] = React.useState([]);
+  const [dadosOriginais, setDadosOriginais] = useState(null);
 
-  function inicializar() {
-    if (idParam == null) {
+  function restaurarDados() {
+    if (!dadosOriginais) {
       setId('');
       setNome('');
       setValor('');
       setDataAlvo('');
       setInvestimentoInicial('');
-    } else {
-      setId(dados.id);
-      setNome(dados.nome);
-      setValor(dados.valor);
-      setDataAlvo(dados.dataAlvo);
-      setInvestimentoInicial(dados.investimentoInicial);
+      return;
     }
+
+    setId(dadosOriginais.id ?? '');
+    setNome(dadosOriginais.nome ?? '');
+    setValor(dadosOriginais.valor ?? '');
+    setDataAlvo(dadosOriginais.dataAlvo ?? '');
+    setInvestimentoInicial(dadosOriginais.investimentoInicial ?? '');
   }
 
   async function salvar() {
-    let data = { id, nome, valor, dataAlvo, investimentoInicial };
-    data = JSON.stringify(data);
-    if (idParam == null) {
-      await axios
-        .post(baseURL, data, {
+    const payload = { id, nome, valor, dataAlvo, investimentoInicial };
+
+    try {
+      if (!idParam) {
+        await axios.post(baseURL, payload, {
           headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function (response) {
-          mensagemSucesso(`Meta ${nome} cadastrada com sucesso!`);
-          navigate(`/listagem-metas`);
-        })
-        .catch(function (error) {
-          mensagemErro(error.response.data);
         });
-    } else {
-      await axios
-        .put(`${baseURL}/${idParam}`, data, {
+        mensagemSucesso(`Meta ${nome} cadastrada com sucesso!`);
+      } else {
+        await axios.put(`${baseURL}/${idParam}`, payload, {
           headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function (response) {
-          mensagemSucesso(`Meta ${nome} alterada com sucesso!`);
-          navigate(`/listagem-metas`);
-        })
-        .catch(function (error) {
-          mensagemErro(error.response.data);
         });
+        mensagemSucesso(`Meta ${nome} alterada com sucesso!`);
+      }
+
+      navigate('/listagem-metas');
+    } catch (error) {
+      mensagemErro(error?.response?.data || 'Erro ao salvar meta');
     }
   }
 
   async function buscar() {
     if (!idParam) return;
+
     try {
       const response = await axios.get(`${baseURL}/${idParam}`);
       const data = response.data;
-      setDados(data);
+
+      setDadosOriginais(data);
+
       setId(data.id ?? '');
       setNome(data.nome ?? '');
       setValor(data.valor ?? '');
@@ -91,7 +86,6 @@ function CadastroMeta() {
 
   useEffect(() => {
     buscar();
-    // eslint-disable-next-line
   }, [idParam]);
 
   return (
@@ -106,50 +100,49 @@ function CadastroMeta() {
                   id='inputNome'
                   value={nome}
                   className='form-control'
-                  name='nome'
                   onChange={(e) => setNome(e.target.value)}
                 />
               </FormGroup>
+
               <FormGroup label='Valor-Alvo: *' htmlFor='inputValor'>
                 <input
                   type='text'
                   id='inputValor'
                   value={valor}
                   className='form-control'
-                  name='valor'
                   onChange={(e) => setValor(e.target.value)}
                 />
               </FormGroup>
+
               <FormGroup label='Data-Alvo: *' htmlFor='inputDataAlvo'>
                 <input
                   type='month'
                   id='inputDataAlvo'
                   value={dataAlvo}
                   className='form-control'
-                  name='dataAlvo'
                   onChange={(e) => setDataAlvo(e.target.value)}
                 />
               </FormGroup>
+
               <FormGroup label='Investimento inicial:' htmlFor='inputInvestimentoInicial'>
                 <input
                   type='text'
-                  id='inputInvestimentoIni'
+                  id='inputInvestimentoInicial'
                   value={investimentoInicial}
                   className='form-control'
-                  name='investimentoInicial'
                   onChange={(e) => setInvestimentoInicial(e.target.value)}
                 />
               </FormGroup>
+
               <Stack spacing={1} padding={1} direction='row'>
-                <button
-                  onClick={salvar}
-                  type='button'
-                  className='btn btn-success'
-                >
+                <button onClick={salvar} type='button' className='btn btn-success'>
                   Salvar
                 </button>
+                <button onClick={restaurarDados} type='button' className='btn btn-warning'>
+                  Restaurar
+                </button>
                 <button
-                  onClick={inicializar}
+                  onClick={() => navigate(-1)}
                   type='button'
                   className='btn btn-danger'
                 >

@@ -32,6 +32,7 @@ function ListagemCategorias() {
 
   const [dadosReceitas, setDadosReceitas] = React.useState(null);
   const [dadosDespesas, setDadosDespesas] = React.useState(null);
+  const [filtroTipo, setFiltroTipo] = React.useState('Todas');
 
   async function excluir(id, tipo) {
     if (tipo == 'Receita') {
@@ -89,19 +90,53 @@ function ListagemCategorias() {
   if (!dadosReceitas) return null;
   if (!dadosDespesas) return null;
 
+  function obterLancamentosFiltrados() {
+    if (filtroTipo === 'Receita') return dadosReceitas;
+    if (filtroTipo === 'Despesa') return dadosDespesas;
+
+    return [...dadosReceitas, ...dadosDespesas];
+  }
+
   return (
     <div className='container'>
       <Card title='Listagem de Categorias'>
+        <p className='text-muted'>Aqui você pode cadastrar novas categorias de receita/despesas e criar limites de gasto para cada categoria de despesa.</p>
+
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <button
-                type='button'
-                className='btn btn-warning'
-                onClick={() => cadastrar()}
-              >
-                Nova Categoria
-              </button>
+
+              <Stack spacing={1} direction='row'>
+                <button
+                  type='button'
+                  className='btn btn-primary'
+                  onClick={() => cadastrar()}
+                >
+                  Nova Categoria
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
+                  type='button'
+                  className='btn btn-danger'
+                >
+                  Cancelar
+                </button>
+              </Stack>
+
+              <Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
+                <label><strong>Filtrar por tipo:</strong></label>
+                <select
+                  className="form-select"
+                  style={{ width: 200 }}
+                  value={filtroTipo}
+                  onChange={(e) => setFiltroTipo(e.target.value)}
+                >
+                  <option value="Todas">Todas</option>
+                  <option value="Receita">Receitas</option>
+                  <option value="Despesa">Despesas</option>
+                </select>
+              </Stack>
+
               <table className='table table-hover'>
                 <thead>
                   <tr>
@@ -113,42 +148,26 @@ function ListagemCategorias() {
                   </tr>
                 </thead>
                 <tbody>
-                  {dadosReceitas.map((dado) => (
-                    <tr key={dado.id}>
+                  {obterLancamentosFiltrados().map((dado) => (
+                    <tr key={`${dado.tipo}-${dado.id}`}>
                       <td>{dado.tipo}</td>
                       <td>{dado.nome}</td>
-                      <td>—</td>
-                      <td>—</td>
+
                       <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(dado.id, dado.tipo)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id, dado.tipo) : event.preventDefault()}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
-                      </td>
-                    </tr>
-                  ))}
-                  {dadosDespesas.map((dado) => (
-                    <tr key={dado.id}>
-                      <td>{dado.tipo}</td>
-                      <td>{dado.nome}</td>
-                      <td>{dado.limiteGasto ? 'Sim' : 'Não'}</td>
-                      <td>
-                      {typeof dado.valorLimite === 'number'
-                        ? dado.valorLimite.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                        : dado.valorLimite
-                          ? Number(dado.valorLimite).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                        {dado.tipo === 'Despesa'
+                          ? dado.limiteGasto ? 'Sim' : 'Não'
                           : '—'}
                       </td>
+
+                      <td>
+                        {dado.tipo === 'Despesa' && dado.limiteGasto
+                          ? Number(dado.valorLimite).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          })
+                          : '—'}
+                      </td>
+
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton
@@ -157,9 +176,14 @@ function ListagemCategorias() {
                           >
                             <EditIcon />
                           </IconButton>
+
                           <IconButton
                             aria-label='delete'
-                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id, dado.tipo) : event.preventDefault()}
+                            onClick={(event) =>
+                              window.confirm('Você realmente deseja excluir?')
+                                ? excluir(dado.id, dado.tipo)
+                                : event.preventDefault()
+                            }
                           >
                             <DeleteIcon />
                           </IconButton>

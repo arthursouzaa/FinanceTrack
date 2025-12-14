@@ -1,7 +1,7 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 #root {
@@ -13,4 +13,38 @@
 
 .card {
   width: 80vw;
+}
+
+button {
+  text-transform: uppercase;
+}
+
+.resumo-card {
+  min-width: 220px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  border: 2px solid #7b3fe4;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.resumo-titulo {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.resumo-valor {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.resumo-valor.positivo {
+  color: #00b050;
+}
+
+.resumo-valor.negativo {
+  color: #ff3b3b;
 }
