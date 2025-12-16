@@ -4,13 +4,15 @@ import Card from '../components/card';
 import Stack from '@mui/material/Stack';
 import FormGroup from '../components/form-group';
 
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement, plugins } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Bar, Pie, Line, Doughnut } from 'react-chartjs-2';
+import annotationPlugin from 'chartjs-plugin-annotation';
 
 import '../custom.css';
 
 import axios from 'axios';
 import { BASE_URL, BASE_URL2 } from '../config/axios';
+import { borderRadius } from '@mui/system';
 
 const baseReceitas = `${BASE_URL2}/Receita`;
 const baseDespesas = `${BASE_URL2}/Despesa`;
@@ -20,7 +22,7 @@ const baseCategoriasD = `${BASE_URL2}/CategoriaDespesa`;
 const baseMetas = `${BASE_URL}/MetaFinanceira`;
 const baseFormasPagamento = `${BASE_URL}/FormaPagamento`;
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement, annotationPlugin);
 
 function RelatorioAnual() {
   const [receitas, setReceitas] = useState([]);
@@ -276,6 +278,18 @@ function RelatorioAnual() {
     responsive: true,
     maintainAspectRatio: true,
     plugins: {
+      annotation: {
+      annotations: {
+        doughnutLabel: {
+          type: 'doughnutLabel',
+          content: ({chart}) => [
+            `${Math.floor(Number(chart.data.datasets[0].data[0]))}%`,
+          ],
+          font: {size: 30},
+          color: 'black'
+        }
+      }
+    },
       legend: { display: true, position: 'bottom', labels: { boxWidth: 15, boxHeight: 15 } },
       tooltip: {
         callbacks: {
@@ -364,6 +378,10 @@ function RelatorioAnual() {
                     data: [progresso, falta],
                     backgroundColor: [paletaCores[1], paletaCores[3]],
                     borderWidth: [0, 0],
+                    circumference: 150,
+                    rotation: 285,
+                    cutout: 120,
+                    borderRadius: {outerStart: [100, 0], innerStart: [100,0], outerEnd: [0,100], innerEnd: [0,100]},
                   }]
                 };
                 return (
