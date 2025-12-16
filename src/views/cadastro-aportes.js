@@ -20,6 +20,7 @@ function CadastroAporte() {
 
     const [id, setId] = useState('');
     const [valor, setValor] = useState('');
+    const [data, setData] = useState(new Date().toISOString().split('T')[0]);
     const [idMetaFinanceira, setIdMetaFinanceira] = useState('');
 
     const [dadosOriginais, setDadosOriginais] = useState(null);
@@ -29,12 +30,14 @@ function CadastroAporte() {
         if (!dadosOriginais) {
             setId('');
             setValor('');
+            setData('');
             setIdMetaFinanceira('');
             return;
         }
 
         setId(dadosOriginais.id ?? '');
         setValor(dadosOriginais.valor ?? '');
+        setData(dadosOriginais.data ?? '');
         setIdMetaFinanceira(
             dadosOriginais.idMetaFinanceira
                 ? String(dadosOriginais.idMetaFinanceira)
@@ -43,20 +46,21 @@ function CadastroAporte() {
     }
 
     async function salvar() {
-        const data = JSON.stringify({
+        const payload = JSON.stringify({
             id,
             valor,
+            data,
             idMetaFinanceira: idMetaFinanceira || null
         });
 
         try {
             if (!idParam) {
-                await axios.post(baseURL, data, {
+                await axios.post(baseURL, payload, {
                     headers: { 'Content-Type': 'application/json' },
                 });
                 mensagemSucesso('Aporte cadastrado com sucesso!');
             } else {
-                await axios.put(`${baseURL}/${idParam}`, data, {
+                await axios.put(`${baseURL}/${idParam}`, payload, {
                     headers: { 'Content-Type': 'application/json' },
                 });
                 mensagemSucesso('Aporte alterado com sucesso!');
@@ -73,14 +77,14 @@ function CadastroAporte() {
 
         try {
             const response = await axios.get(`${baseURL}/${idParam}`);
-            const data = response.data;
+            const payload = response.data;
 
-            setDadosOriginais(data);
+            setDadosOriginais(payload);
 
-            setId(data.id ?? '');
-            setValor(data.valor ?? '');
+            setId(payload.id ?? '');
+            setValor(payload.valor ?? '');
             setIdMetaFinanceira(
-                data.idMetaFinanceira ? String(data.idMetaFinanceira) : ''
+                payload.idMetaFinanceira ? String(payload.idMetaFinanceira) : ''
             );
         } catch (error) {
             mensagemErro('Erro ao buscar aporte');
@@ -118,6 +122,16 @@ function CadastroAporte() {
                                     value={valor}
                                     className='form-control'
                                     onChange={(e) => setValor(e.target.value)}
+                                />
+                            </FormGroup>
+
+                            <FormGroup label='Data: *' htmlFor='inputData'>
+                                <input
+                                    type='date'
+                                    id='inputData'
+                                    value={data}
+                                    className='form-control'
+                                    onChange={(e) => setData(e.target.value)}
                                 />
                             </FormGroup>
 

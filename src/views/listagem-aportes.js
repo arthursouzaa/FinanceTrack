@@ -32,11 +32,11 @@ function ListagemAportes() {
   const [dados, setDados] = useState([]);
 
   async function excluir(id) {
-    let data = JSON.stringify({ id });
+    let payload = JSON.stringify({ id });
     let url = `${baseURL}/${id}`;
     console.log(url);
     await axios
-      .delete(url, data, {
+      .delete(url, payload, {
         headers: { 'Content-Type': 'application/json' },
       })
       .then(function (response) {
@@ -102,6 +102,7 @@ function ListagemAportes() {
                   <tr>
                     <th scope='col'>Meta Financeira</th>
                     <th scope='col'>Valor</th>
+                    <th scope='col'>Data</th>
                     <th scope='col' colSpan={2}>Ações</th>
                   </tr>
                 </thead>
@@ -116,6 +117,7 @@ function ListagemAportes() {
                             ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                             : '—'}
                       </td>
+                      <td>{dado.data}</td>
                       <td>
                         <Stack spacing={1} padding={0} direction='row'>
                           <IconButton

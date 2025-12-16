@@ -188,7 +188,7 @@ function ListagemLancamentos() {
     <div className='container'>
       <Card title='Listagem de Lançamentos'>
         <p className='text-muted'>Total de suas Receitas e Despesas</p>
-        
+
         <Stack spacing={2} direction="row" sx={{ mb: 2 }}>
           <div className="resumo-card receita">
             <span className="resumo-titulo">Receitas</span>

@@ -1,6 +1,7 @@
 import React from 'react';
 import logo from '../assets/financetrack-logo.png';
 import NavbarItem from './navbarItem';
+import NavbarDropdown from './navbarDropdown';
 
 function Navbar(props) {
   return (
@@ -9,7 +10,7 @@ function Navbar(props) {
         <a href='/' className='navbar-brand'>
           <img src={logo} alt="FinanceTrack" style={{ maxWidth: '100px', height: '50%' }} />
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span className='navbar-toggler-icon'></span>
         </button>
         <div className='collapse navbar-collapse' id='navbarResponsive'>
@@ -49,10 +50,14 @@ function Navbar(props) {
             />
           </ul>
           <ul className='navbar-nav'>
-            <NavbarItem
+            <NavbarDropdown
               render='true'
-              href='/#'
+              href='#'
               label='Relatórios'
+              link1='/relatorio-mensal'
+              link1label='Relatório Mensal'
+              link2='/relatorio-anual'
+              link2label='Relatório Anual'
             />
           </ul>
           {/* <ul className='navbar-nav'>
