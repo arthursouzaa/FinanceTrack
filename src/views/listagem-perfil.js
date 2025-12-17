@@ -89,7 +89,7 @@ function ListagemPerfil() {
 
     return (
         <div className='container'>
-            <Card title='Editar Perfil'>
+            <Card title='Editar Perfil' icon="bi bi-person-circle">
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>

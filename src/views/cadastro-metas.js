@@ -21,6 +21,7 @@ function CadastroMeta() {
   const [id, setId] = useState('');
   const [nome, setNome] = useState('');
   const [valor, setValor] = useState('');
+  const [dataEnvio, setDataEnvio] = useState(obterMesAtual());
   const [dataAlvo, setDataAlvo] = useState('');
   const [investimentoInicial, setInvestimentoInicial] = useState('');
 
@@ -30,6 +31,7 @@ function CadastroMeta() {
     if (!dadosOriginais) {
       setId('');
       setNome('');
+      setDataEnvio('');
       setValor('');
       setDataAlvo('');
       setInvestimentoInicial('');
@@ -38,13 +40,21 @@ function CadastroMeta() {
 
     setId(dadosOriginais.id ?? '');
     setNome(dadosOriginais.nome ?? '');
+    setDataEnvio(dadosOriginais.dataEnvio ?? '');
     setValor(dadosOriginais.valor ?? '');
     setDataAlvo(dadosOriginais.dataAlvo ?? '');
     setInvestimentoInicial(dadosOriginais.investimentoInicial ?? '');
   }
 
   async function salvar() {
-    const payload = { id, nome, valor, dataAlvo, investimentoInicial };
+    const payload = {
+      id,
+      nome,
+      valor,
+      dataEnvio,
+      dataAlvo,
+      investimentoInicial
+    };
 
     try {
       if (!idParam) {
@@ -76,6 +86,7 @@ function CadastroMeta() {
 
       setId(data.id ?? '');
       setNome(data.nome ?? '');
+      setDataEnvio(data.dataEnvio ?? '');
       setValor(data.valor ?? '');
       setDataAlvo(data.dataAlvo ?? '');
       setInvestimentoInicial(data.investimentoInicial ?? '');
@@ -88,9 +99,16 @@ function CadastroMeta() {
     buscar();
   }, [idParam]);
 
+  function obterMesAtual() {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    return `${ano}-${mes}`;
+  }
+
   return (
     <div className='container'>
-      <Card title='Cadastro de Meta'>
+      <Card title='Cadastro de Meta' icon="bi bi-cash-coin">
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
@@ -101,6 +119,16 @@ function CadastroMeta() {
                   value={nome}
                   className='form-control'
                   onChange={(e) => setNome(e.target.value)}
+                />
+              </FormGroup>
+
+              <FormGroup label='Data-Envio: *' htmlFor='inputDataEnvio'>
+                <input
+                  type='month'
+                  id='inputDataEnvio'
+                  value={dataEnvio}
+                  className='form-control'
+                  onChange={(e) => setDataEnvio(e.target.value)}
                 />
               </FormGroup>
 

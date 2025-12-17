@@ -62,7 +62,7 @@ function ListagemFormasPagamento() {
 
   return (
     <div className='container'>
-      <Card title='Listagem de Formas de Pagamento'>
+      <Card title='Listagem de Formas de Pagamento' icon="bi bi-credit-card-2-back">
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>

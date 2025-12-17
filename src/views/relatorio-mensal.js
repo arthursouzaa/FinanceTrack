@@ -287,7 +287,7 @@ function RelatorioMensal() {
 
   return (
     <div className='container'>
-      <Card title='Relatório Mensal'>
+      <Card title='Relatório Mensal' icon='bi bi-bank'>
         <p className='text-muted'>Total de seus dados financeiros no mês de {formatarMes(filtroMes)}/{formatarAno(filtroAno)}</p>
         <strong style={{color: '#9329ed'}}>Selecione o período:</strong>
         <Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
@@ -335,14 +335,14 @@ function RelatorioMensal() {
           <div className="resumo-card receita">
             <span className="resumo-titulo">Receitas</span>
             <span className="resumo-valor positivo">
-              {formatarMoeda(totalReceitas)} ▲
+              {totalReceitas > 0 ? formatarMoeda(totalReceitas) : '—'} ▲
             </span>
           </div>
 
           <div className="resumo-card despesa">
             <span className="resumo-titulo">Despesas</span>
             <span className="resumo-valor negativo">
-              {formatarMoeda(totalDespesas)} ▼
+              {totalDespesas > 0 ? formatarMoeda(totalDespesas) : '—'} ▲
             </span>
           </div>
         </Stack>

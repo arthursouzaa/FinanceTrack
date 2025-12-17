@@ -279,17 +279,17 @@ function RelatorioAnual() {
     maintainAspectRatio: true,
     plugins: {
       annotation: {
-      annotations: {
-        doughnutLabel: {
-          type: 'doughnutLabel',
-          content: ({chart}) => [
-            `${Math.floor(Number(chart.data.datasets[0].data[0]))}%`,
-          ],
-          font: {size: 30},
-          color: 'black'
+        annotations: {
+          doughnutLabel: {
+            type: 'doughnutLabel',
+            content: ({ chart }) => [
+              `${Math.floor(Number(chart.data.datasets[0].data[0]))}%`,
+            ],
+            font: { size: 30 },
+            color: 'black'
+          }
         }
-      }
-    },
+      },
       legend: { display: true, position: 'bottom', labels: { boxWidth: 15, boxHeight: 15 } },
       tooltip: {
         callbacks: {
@@ -304,7 +304,7 @@ function RelatorioAnual() {
 
   return (
     <div className='container'>
-      <Card title='Relatório Anual'>
+      <Card title='Relatório Anual' icon='bi bi-bank'>
         <p className='text-muted'>Total de seus dados financeiros no ano de {formatarAno(filtroAno)}</p>
         <strong style={{ color: '#9329ed' }}>Selecione o ano:</strong>
         <Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
@@ -323,19 +323,19 @@ function RelatorioAnual() {
             ))}
           </select>
         </Stack>
-            <br></br>
+        <br></br>
         <Stack spacing={2} direction="row" sx={{ mb: 2 }}>
           <div className="resumo-card receita">
             <span className="resumo-titulo">Receitas</span>
             <span className="resumo-valor positivo">
-              {formatarMoeda(totalReceitas)} ▲
+              {totalReceitas > 0 ? formatarMoeda(totalReceitas) : '—'} ▲
             </span>
           </div>
 
           <div className="resumo-card despesa">
             <span className="resumo-titulo">Despesas</span>
             <span className="resumo-valor negativo">
-              {formatarMoeda(totalDespesas)} ▼
+              {totalDespesas > 0 ? formatarMoeda(totalDespesas) : '—'} ▲
             </span>
           </div>
         </Stack>
@@ -367,11 +367,30 @@ function RelatorioAnual() {
           <Card title='Metas Financeiras'>
             <Stack spacing={1} direction="row" >
               {dadosMetasFinanceiras.map((meta, index) => {
-                const aportesMeta = aportesFiltrados
+
+                const anoMeta = meta.dataEnvio
+                  ? new Date(meta.dataEnvio).getFullYear()
+                  : null;
+
+                const metaAtivaNoAno =
+                  filtroAno === 'Todos' || anoMeta === Number(filtroAno);
+
+                const investimentoInicial = Number(meta.investimentoInicial) || 0;
+
+                const totalAportes = aportesFiltrados
                   .filter((a) => String(a.idMetaFinanceira) === String(meta.id))
-                  .reduce((sum, a) => sum + Number(a.valor), 0);
-                const progresso = Math.min((aportesMeta / meta.valor) * 100, 100);
+                  .reduce((sum, a) => sum + Number(a.valor || 0), 0);
+
+                const totalInvestido = metaAtivaNoAno
+                  ? investimentoInicial + totalAportes
+                  : 0;
+
+                const progresso = metaAtivaNoAno
+                  ? Math.min((totalInvestido / Number(meta.valor)) * 100, 100)
+                  : 0;
+
                 const falta = 100 - progresso;
+
                 const dados = {
                   labels: ['Aportado', 'Falta'],
                   datasets: [{
@@ -381,9 +400,15 @@ function RelatorioAnual() {
                     circumference: 150,
                     rotation: 285,
                     cutout: 120,
-                    borderRadius: {outerStart: [100, 0], innerStart: [100,0], outerEnd: [0,100], innerEnd: [0,100]},
+                    borderRadius: {
+                      outerStart: [100, 0],
+                      innerStart: [100, 0],
+                      outerEnd: [0, 100],
+                      innerEnd: [0, 100]
+                    },
                   }]
                 };
+
                 return (
                   <Card key={meta.id} title={meta.nome}>
                     <Doughnut data={dados} options={opcoesGraficoDonut} />
@@ -400,7 +425,6 @@ function RelatorioAnual() {
           </Card>
         </Stack>
       </Card>
-
     </div>
   );
 }

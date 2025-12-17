@@ -99,7 +99,7 @@ function ListagemCategorias() {
 
   return (
     <div className='container'>
-      <Card title='Listagem de Categorias'>
+      <Card title='Listagem de Categorias' icon='bi bi-tags'>
         <p className='text-muted'>Aqui você pode cadastrar novas categorias de receita/despesas e criar limites de gasto para cada categoria de despesa.</p>
 
         <div className='row'>

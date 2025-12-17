@@ -181,26 +181,36 @@ function ListagemLancamentos() {
     });
   }
 
-  const totalReceitas = somarValores(dadosReceitas);
-  const totalDespesas = somarValores(dadosDespesas);
+  const lancamentosFiltrados = obterLancamentosFiltrados();
+
+  const receitasFiltradas = lancamentosFiltrados.filter(
+    (l) => l.tipo === 'Receita'
+  );
+
+  const despesasFiltradas = lancamentosFiltrados.filter(
+    (l) => l.tipo === 'Despesa'
+  );
+
+  const totalReceitas = somarValores(receitasFiltradas);
+  const totalDespesas = somarValores(despesasFiltradas);
 
   return (
     <div className='container'>
-      <Card title='Listagem de Lançamentos'>
+      <Card title='Listagem de Lançamentos' icon='bi bi-wallet2'>
         <p className='text-muted'>Total de suas Receitas e Despesas</p>
 
         <Stack spacing={2} direction="row" sx={{ mb: 2 }}>
           <div className="resumo-card receita">
             <span className="resumo-titulo">Receitas</span>
             <span className="resumo-valor positivo">
-              {formatarMoeda(totalReceitas)} ▲
+              {totalReceitas > 0 ? formatarMoeda(totalReceitas) : '—'} ▲
             </span>
           </div>
 
           <div className="resumo-card despesa">
             <span className="resumo-titulo">Despesas</span>
             <span className="resumo-valor negativo">
-              {formatarMoeda(totalDespesas)} ▼
+              {totalDespesas > 0 ? formatarMoeda(totalDespesas) : '—'} ▲
             </span>
           </div>
         </Stack>
@@ -233,7 +243,7 @@ function ListagemLancamentos() {
                   value={filtroTipo}
                   onChange={(e) => setFiltroTipo(e.target.value)}
                 >
-                  <option value="Todas">Todas</option>
+                  <option value="Todos">Todos</option>
                   <option value="Receita">Receitas</option>
                   <option value="Despesa">Despesas</option>
                 </select>

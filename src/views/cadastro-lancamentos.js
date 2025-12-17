@@ -175,12 +175,12 @@ function CadastroLancamento() {
 
   return (
     <div className='container'>
-      <Card title='Cadastro de Lançamento'>
+      <Card title='Cadastro de Lançamento' icon='bi bi-wallet2'>
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
 
-              <FormGroup label='Tipo:'>
+              <FormGroup label='Tipo:'>&nbsp;
                 <label>
                   <input
                     type='radio'
@@ -255,7 +255,7 @@ function CadastroLancamento() {
               </FormGroup>
 
               <Stack spacing={1} padding={0} direction='row' className='form-switch'>
-                <FormGroup label='Parcelada:' htmlFor='inputParcelada'>
+                <FormGroup label='Parcelada:' htmlFor='inputParcelada'>&nbsp;
                   <input
                     type='checkbox'
                     className='form-check-input'

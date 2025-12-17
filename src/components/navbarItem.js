@@ -5,6 +5,7 @@ function NavbarItem({ render, ...props }) {
     return (
       <li className='nav-item'>
         <a onClick={props.onClick} className='nav-link' href={props.href}>
+          <i className={props.icon}></i>&nbsp;
           {props.label}
         </a>
       </li>

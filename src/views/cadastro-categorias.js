@@ -115,10 +115,10 @@ function CadastroCategoria() {
 
   return (
     <div className='container'>
-      <Card title='Cadastro de Categoria'>
+      <Card title='Cadastro de Categoria' icon='bi bi-tags'>
         <div className='bs-component'>
           <Stack spacing={1} direction='row'>
-            <FormGroup label='Tipo:' display='inline'>
+            <FormGroup label='Tipo:&nbsp;' display='inline'>
               <label>
                 <input
                   type='radio'
@@ -156,7 +156,7 @@ function CadastroCategoria() {
           </FormGroup>
 
           <Stack spacing={1} padding={0} direction='row' className='form-switch'>
-            <FormGroup label='Limite de Gasto: &nbsp;' htmlFor='inputLimiteGasto'>
+            <FormGroup label='Limite de Gasto:&nbsp;' htmlFor='inputLimiteGasto'>
               <input
                 type='checkbox'
                 className='form-check-input'

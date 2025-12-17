@@ -79,7 +79,7 @@ function ListagemPagamentos() {
 
   return (
     <div className='container'>
-      <Card title='Listagem de Pagamentos'>
+      <Card title='Listagem de Pagamentos' icon='bi bi-credit-card'>
         <p className='text-muted'>Consulte e realize o pagamento de suas faturas de compras parceladas</p>
         
         <table className='table table-hover'>

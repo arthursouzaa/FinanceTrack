@@ -33,6 +33,7 @@ function ListagemMetas() {
 
   const [dados, setDados] = React.useState(null);
   const [dadosAportes, setDadosAportes] = React.useState([]);
+  const [statusFiltro, setStatusFiltro] = React.useState('');
 
   async function excluir(id) {
     let data = JSON.stringify({ id });
@@ -91,31 +92,46 @@ function ListagemMetas() {
   if (!dados) return null;
   if (!dadosAportes) return null;
 
+  function isMetaConcluida(meta) {
+    const total = totalInvestido(meta);
+    return total >= Number(meta.valor);
+  }
+
+  const metasFiltradas = dados.filter((meta) => {
+    if (!statusFiltro) return true;
+
+    const concluida = isMetaConcluida(meta);
+
+    if (statusFiltro === 'CONCLUIDA') return concluida;
+    if (statusFiltro === 'ABERTA') return !concluida;
+
+    return true;
+  });
+
+  const totalInvestidoFiltrado = metasFiltradas.reduce((acc, meta) => {
+    return acc + totalInvestido(meta);
+  }, 0);
+
   return (
     <>
       <div className='container'>
-        <Card title='Listagem de Metas Financeiras'>
+        <Card title='Listagem de Metas Financeiras' icon="bi bi-cash-coin">
           <p className='text-muted'>Consulte as suas metas financeiras</p>
 
           <div className='row mt-3 mb-3'>
             <div className='col-md-4'>
-              <div
-                className='p-3'
-                style={{
-                  border: '2px solid #6f42c1',
-                  borderRadius: '10px',
-                  backgroundColor: '#fff',
-                }}
-              >
+              <div className='resumo-card'>
                 <h6 style={{ marginBottom: '8px', color: '#555' }}>
                   Total Investido
                 </h6>
 
                 <h4 style={{ color: '#6f42c1', fontWeight: 'bold' }}>
-                  {totalInvestidoGeral().toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  })}
+                  {totalInvestidoFiltrado > 0
+                    ? totalInvestidoFiltrado.toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })
+                    : '—'}
                 </h4>
               </div>
             </div>
@@ -141,10 +157,28 @@ function ListagemMetas() {
                   </button>
                 </Stack>
 
+                <div className='row mt-3 mb-3'>
+                  <div className='col-md-4'>
+                    <label className='form-label fw-bold'>
+                      Selecione o status Concluído ou Em Aberto:
+                    </label>
+                    <select
+                      className='form-select'
+                      value={statusFiltro}
+                      onChange={(e) => setStatusFiltro(e.target.value)}
+                    >
+                      <option value=''>Todos</option>
+                      <option value='CONCLUIDA'>Concluída</option>
+                      <option value='ABERTA'>Em Aberto</option>
+                    </select>
+                  </div>
+                </div>
+
                 <table className='table table-hover'>
                   <thead>
                     <tr>
                       <th scope='col'>Nome</th>
+                      <th scope='col'>Data-Envio</th>
                       <th scope='col'>Valor-Alvo</th>
                       <th scope='col'>Data-Alvo</th>
                       <th scope='col'>Total Investido</th>
@@ -152,9 +186,10 @@ function ListagemMetas() {
                     </tr>
                   </thead>
                   <tbody>
-                    {dados.map((dado) => (
+                    {metasFiltradas.map((dado) => (
                       <tr key={dado.id}>
                         <td>{dado.nome}</td>
+                        <td>{dado.dataEnvio}</td>
                         <td>
                           {typeof dado.valor === 'number'
                             ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })

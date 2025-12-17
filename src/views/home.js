@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { BASE_URL2 } from '../config/axios';
+import { BASE_URL2, BASE_URL } from '../config/axios';
 import React from 'react';
 import Card from '../components/card';
 import BtnEdicao from '../components/btnEdicao';
@@ -10,29 +10,30 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 function Home() {
     const [totalReceitas, setTotalReceitas] = React.useState(0);
     const [totalDespesas, setTotalDespesas] = React.useState(0);
+    const [nomeUsuario, setNomeUsuario] = React.useState('');
 
     React.useEffect(() => {
-        async function carregarTotais() {
+        async function carregarDados() {
             try {
-                const [receitasRes, despesasRes] = await Promise.all([
+                const [receitasRes, despesasRes, clienteRes] = await Promise.all([
                     axios.get(`${BASE_URL2}/Receita`),
-                    axios.get(`${BASE_URL2}/Despesa`)
+                    axios.get(`${BASE_URL2}/Despesa`),
+                    axios.get(`${BASE_URL}/Cliente/1`)
                 ]);
 
                 const soma = (lista) =>
                     lista.reduce((acc, item) => acc + Number(item.valor || 0), 0);
 
-                const receitas = soma(receitasRes.data);
-                const despesas = soma(despesasRes.data);
+                setTotalReceitas(soma(receitasRes.data));
+                setTotalDespesas(soma(despesasRes.data));
+                setNomeUsuario(clienteRes.data.nome);
 
-                setTotalReceitas(receitas);
-                setTotalDespesas(despesas);
             } catch {
                 // opcional: toastr de erro
             }
         }
 
-        carregarTotais();
+        carregarDados();
     }, []);
 
     return (
@@ -40,14 +41,17 @@ function Home() {
             <img src={require('../assets/financetrack-slogan.png')} alt="FinanceTrack Slogan" style={{ maxWidth: '50%' }} />
 
             <div id="dados-pessoais">
-                
+
                 <div className="perfil" style={{ padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <i className="bi bi-person-circle" alt="Imagem de perfil" style={{ fontSize: 70, marginBottom: -10 }}></i>
-                    <span className="nome-usuario" style={{ margin: 0 }}>Arthur</span>
+                    <span className="nome-usuario" style={{ margin: 0 }}>{nomeUsuario.split(' ')[0]}</span>
                 </div>
 
                 <div className="conteudo">
-                    <h3>Seja bem-vindo(a), Arthur!</h3>
+                    <h3>
+                        Seja bem-vindo(a), {nomeUsuario}!
+                    </h3>
+
                     <p>
                         Na página inicial você encontra o seu saldo total. Além disso, você pode
                         editar seus dados pessoais, suas categorias de entrada/saída e formas de pagamento! 🎉

@@ -76,7 +76,7 @@ function ListagemAportes() {
 
   return (
     <div className='container'>
-      <Card title='Listagem de Aportes'>
+      <Card title='Listagem de Aportes' icon="bi bi-cash">
         <p className='text-muted'>Consulte os seus aportes</p>
         <div className='row'>
           <div className='col-lg-12'>

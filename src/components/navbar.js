@@ -19,27 +19,27 @@ function Navbar(props) {
               render='true'
               href='/#'
               label='Inicio'
+              icon='bi bi-house'
             />
           </ul>
           <ul className='navbar-nav'>
             <NavbarItem
               render='true'
               href='/listagem-lancamentos'
-              label='Receitas e Despesas'
+              label='Lançamentos'
+              icon='bi bi-wallet2'
             />
           </ul>
           <ul className='navbar-nav'>
-            <NavbarItem
+            <NavbarDropdown
               render='true'
-              href='/listagem-metas'
-              label='Metas Financeiras'
-            />
-          </ul>
-          <ul className='navbar-nav'>
-            <NavbarItem
-              render='true'
-              href='/listagem-aportes'
-              label='Aportes'
+              href='#'
+              label='Objetivos'
+              link1='/listagem-metas'
+              link1label='Metas'
+              link2='/listagem-aportes'
+              link2label='Aportes'
+              icon="bi bi-cash-coin"
             />
           </ul>
           <ul className='navbar-nav'>
@@ -47,6 +47,7 @@ function Navbar(props) {
               render='true'
               href='/listagem-pagamentos'
               label='Pagamentos'
+              icon='bi bi-credit-card'
             />
           </ul>
           <ul className='navbar-nav'>
@@ -58,6 +59,7 @@ function Navbar(props) {
               link1label='Relatório Mensal'
               link2='/relatorio-anual'
               link2label='Relatório Anual'
+              icon='bi bi-bank'
             />
           </ul>
           {/* <ul className='navbar-nav'>
