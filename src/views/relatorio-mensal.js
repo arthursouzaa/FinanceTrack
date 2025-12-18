@@ -11,7 +11,7 @@ import '../custom.css';
 
 import axios from 'axios';
 import { BASE_URL, BASE_URL2 } from '../config/axios';
-import { border, height } from '@mui/system';
+import { border, height, minHeight } from '@mui/system';
 
 const baseReceitas = `${BASE_URL2}/Receita`;
 const baseDespesas = `${BASE_URL2}/Despesa`;
@@ -332,7 +332,7 @@ function RelatorioMensal() {
         <br></br>
 
         <Stack spacing={2} direction="row" sx={{ mb: 2 }}>
-          <div className="resumo-card receita">
+          <div className="resumo-card receita"> 
             <span className="resumo-titulo">Receitas</span>
             <span className="resumo-valor positivo">
               {totalReceitas > 0 ? formatarMoeda(totalReceitas) : '—'} ▲
@@ -350,7 +350,7 @@ function RelatorioMensal() {
         <br></br>
 
         <Stack spacing={1} direction="row" >
-          <Card title='Receitas'>
+          <Card title='Receitas' style={{ height: '300px' }}>
             <Pie data={dadosGraficoPizzaCategoriasR} options={opcoesGraficoPizza} />
           </Card>
           <Card title='Despesas'>

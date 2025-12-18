@@ -343,7 +343,7 @@ function RelatorioAnual() {
         <br></br>
 
         <Stack spacing={1} direction="row">
-          <Card title='Receitas'>
+          <Card title='Receitas' style={{ height: '300px' }}>
             <Pie data={dadosGraficoPizzaCategoriasR} options={opcoesGraficoPizza} />
           </Card>
           <Card title='Despesas'>

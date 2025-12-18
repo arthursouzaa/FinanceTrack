@@ -199,44 +199,12 @@ function ListagemLancamentos() {
       <Card title='Listagem de Lançamentos' icon='bi bi-wallet2'>
         <p className='text-muted'>Total de suas Receitas e Despesas</p>
 
-        <Stack spacing={2} direction="row" sx={{ mb: 2 }}>
-          <div className="resumo-card receita">
-            <span className="resumo-titulo">Receitas</span>
-            <span className="resumo-valor positivo">
-              {totalReceitas > 0 ? formatarMoeda(totalReceitas) : '—'} ▲
-            </span>
-          </div>
-
-          <div className="resumo-card despesa">
-            <span className="resumo-titulo">Despesas</span>
-            <span className="resumo-valor negativo">
-              {totalDespesas > 0 ? formatarMoeda(totalDespesas) : '—'} ▲
-            </span>
-          </div>
-        </Stack>
-
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <Stack spacing={1} direction='row'>
-                <button
-                  type='button'
-                  className='btn btn-primary'
-                  onClick={() => cadastrar()}
-                >
-                  Novo Lançamento
-                </button>
-                <button
-                  onClick={() => navigate(-1)}
-                  type='button'
-                  className='btn btn-danger'
-                >
-                  Cancelar
-                </button>
-              </Stack>
-
-              <Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
-                <label><strong>Filtrar por tipo:</strong></label>
+              
+              <Stack spacing={2} direction="row" alignItems="center" marginBottom={2}>
+                <label className='label-filtro'><strong>Selecione o tipo:</strong></label>
                 <select
                   className="form-select"
                   style={{ width: 200 }}
@@ -249,6 +217,8 @@ function ListagemLancamentos() {
                 </select>
               </Stack>
 
+
+        <strong className='label-filtro' >Selecione o período:</strong>
               <Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
                 <label><strong>Mês:</strong></label>
                 <select
@@ -286,6 +256,39 @@ function ListagemLancamentos() {
                     </option>
                   ))}
                 </select>
+              </Stack>
+
+              <Stack spacing={2} direction="row" sx={{ mt:2, mb: 2 }}>
+                <div className="resumo-card receita">
+                  <span className="resumo-titulo">Receitas</span>
+                  <span className="resumo-valor positivo">
+                    {totalReceitas > 0 ? formatarMoeda(totalReceitas) : '—'} ▲
+                  </span>
+                </div>
+
+                <div className="resumo-card despesa">
+                  <span className="resumo-titulo">Despesas</span>
+                  <span className="resumo-valor negativo">
+                    {totalDespesas > 0 ? formatarMoeda(totalDespesas) : '—'} ▲
+                  </span>
+                </div>
+              </Stack>
+
+              <Stack spacing={1} direction='row'>
+                <button
+                  type='button'
+                  className='btn btn-primary'
+                  onClick={() => cadastrar()}
+                >
+                  Novo Lançamento
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
+                  type='button'
+                  className='btn btn-danger'
+                >
+                  Cancelar
+                </button>
               </Stack>
 
               <table className='table table-hover'>

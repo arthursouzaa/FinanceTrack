@@ -81,7 +81,7 @@ function ListagemAportes() {
         <div className='row'>
           <div className='col-lg-12'>
             <div className='bs-component'>
-              <Stack spacing={1} direction='row'>
+              <Stack spacing={1} direction='row' marginBottom={2}>
                 <button
                   type='button'
                   className='btn btn-primary'

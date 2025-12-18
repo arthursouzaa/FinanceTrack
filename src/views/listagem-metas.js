@@ -117,22 +117,38 @@ function ListagemMetas() {
       <div className='container'>
         <Card title='Listagem de Metas Financeiras' icon="bi bi-cash-coin">
           <p className='text-muted'>Consulte as suas metas financeiras</p>
+ 
+ 
+<Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
+              <label className='label-filtro'>
+                Selecione o status Concluído ou Em Aberto:
+              </label>
+              <select
+                className='form-select'
+                value={statusFiltro}
+                onChange={(e) => setStatusFiltro(e.target.value)}
+                style={{ width: 200 }}
+              >
+                <option value=''>Todos</option>
+                <option value='CONCLUIDA'>Concluída</option>
+                <option value='ABERTA'>Em Aberto</option>
+              </select></Stack>
 
           <div className='row mt-3 mb-3'>
-            <div className='col-md-4'>
+            <div className='col-md-2'>
               <div className='resumo-card'>
-                <h6 style={{ marginBottom: '8px', color: '#555' }}>
+                <span className='resumo-titulo'>
                   Total Investido
-                </h6>
+                </span>
 
-                <h4 style={{ color: '#6f42c1', fontWeight: 'bold' }}>
+                <span className='resumo-valor'>
                   {totalInvestidoFiltrado > 0
                     ? totalInvestidoFiltrado.toLocaleString('pt-BR', {
                       style: 'currency',
                       currency: 'BRL',
                     })
                     : '—'}
-                </h4>
+                </span>
               </div>
             </div>
           </div>
@@ -140,7 +156,7 @@ function ListagemMetas() {
           <div className='row'>
             <div className='col-lg-12'>
               <div className='bs-component'>
-                <Stack spacing={1} direction='row'>
+                <Stack spacing={1} direction='row' className='mb-3'>
                   <button
                     type='button'
                     className='btn btn-primary'
@@ -156,23 +172,6 @@ function ListagemMetas() {
                     Cancelar
                   </button>
                 </Stack>
-
-                <div className='row mt-3 mb-3'>
-                  <div className='col-md-4'>
-                    <label className='form-label fw-bold'>
-                      Selecione o status Concluído ou Em Aberto:
-                    </label>
-                    <select
-                      className='form-select'
-                      value={statusFiltro}
-                      onChange={(e) => setStatusFiltro(e.target.value)}
-                    >
-                      <option value=''>Todos</option>
-                      <option value='CONCLUIDA'>Concluída</option>
-                      <option value='ABERTA'>Em Aberto</option>
-                    </select>
-                  </div>
-                </div>
 
                 <table className='table table-hover'>
                   <thead>
