@@ -231,6 +231,22 @@ function CadastroLancamento() {
                 </select>
               </FormGroup>
 
+              <Stack spacing={1} padding={0} direction='row' className='form-switch'>
+                <FormGroup label='Volume:' htmlFor='inputVolume'>&nbsp;
+                  <input
+                    type='checkbox'
+                    className='form-check-input'
+                    role='switch'
+                    id='inputVolume'
+                    checked={volume}
+                    onChange={(e) => {
+                      setVolume(e.target.checked);
+                    }}
+                    style={{ marginLeft: 3 }}
+                  />
+                </FormGroup>
+              </Stack>
+
               <FormGroup label='Valor:'>
                 <input
                   type='number'
