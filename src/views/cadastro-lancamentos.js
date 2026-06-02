@@ -10,10 +10,10 @@ import { mensagemSucesso, mensagemErro } from '../components/toastr';
 import '../custom.css';
 
 import axios from 'axios';
-import { BASE_URL, BASE_URL2 } from '../config/axios';
+import { BASE_URL } from '../config/axios';
 
-const baseReceitas = `${BASE_URL2}/Receita`;
-const baseDespesas = `${BASE_URL2}/Despesa`;
+const baseReceitas = `${BASE_URL}/Receita`;
+const baseDespesas = `${BASE_URL}/Despesa`;
 
 function CadastroLancamento() {
   const { idParam } = useParams();
@@ -145,8 +145,8 @@ function CadastroLancamento() {
     try {
       const [fp, cr, cd] = await Promise.all([
         axios.get(`${BASE_URL}/FormaPagamento`),
-        axios.get(`${BASE_URL2}/CategoriaReceita`),
-        axios.get(`${BASE_URL2}/CategoriaDespesa`)
+        axios.get(`${BASE_URL}/CategoriaReceita`),
+        axios.get(`${BASE_URL}/CategoriaDespesa`)
       ]);
 
       setFormasPagamento(fp.data);

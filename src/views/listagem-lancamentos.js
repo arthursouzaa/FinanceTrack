@@ -14,12 +14,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
 import axios from 'axios';
-import { BASE_URL, BASE_URL2 } from '../config/axios';
+import { BASE_URL } from '../config/axios';
 
-const baseReceitas = `${BASE_URL2}/Receita`;
-const baseDespesas = `${BASE_URL2}/Despesa`;
-const baseCategoriasR = `${BASE_URL2}/CategoriaReceita`;
-const baseCategoriasD = `${BASE_URL2}/CategoriaDespesa`;
+const baseReceitas = `${BASE_URL}/Receita`;
+const baseDespesas = `${BASE_URL}/Despesa`;
+const baseCategoriasR = `${BASE_URL}/CategoriaReceita`;
+const baseCategoriasD = `${BASE_URL}/CategoriaDespesa`;
 const baseFormasPagamento = `${BASE_URL}/FormaPagamento`;
 
 function ListagemLancamentos() {

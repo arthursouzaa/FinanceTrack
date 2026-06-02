@@ -7,12 +7,12 @@ import Card from '../components/card';
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
 
 import axios from 'axios';
-import { BASE_URL, BASE_URL2 } from '../config/axios';
+import { BASE_URL } from '../config/axios';
 
 import '../custom.css';
 
-const baseDespesas = `${BASE_URL2}/Despesa`;
-const baseCategoriasDespesa = `${BASE_URL2}/CategoriaDespesa`;
+const baseDespesas = `${BASE_URL}/Despesa`;
+const baseCategoriasDespesa = `${BASE_URL}/CategoriaDespesa`;
 const baseFormasPagamento = `${BASE_URL}/FormaPagamento`;
 
 function ListagemPagamentos() {

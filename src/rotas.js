@@ -39,7 +39,7 @@ function Rotas(props) {
         <Route path='/listagem-categorias' element={<ListagemCategorias />} />
         <Route path='/listagem-lancamentos' element={<ListagemLancamentos />} />
         <Route path='/listagem-pagamentos' element={<ListagemPagamentos />} />
-        <Route path='/listagem-perfil' element={<ListagemPerfil />} />
+        <Route path='/listagem-perfil/:idParam?' element={<ListagemPerfil />} />
 
         <Route path='/relatorio-mensal' element={<RelatorioMensal />} />
         <Route path='/relatorio-anual' element={<RelatorioAnual />} />

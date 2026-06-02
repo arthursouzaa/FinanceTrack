@@ -10,14 +10,14 @@ import { Bar, Pie, Line } from 'react-chartjs-2';
 import '../custom.css';
 
 import axios from 'axios';
-import { BASE_URL, BASE_URL2 } from '../config/axios';
+import { BASE_URL } from '../config/axios';
 import { border, height, minHeight } from '@mui/system';
 
-const baseReceitas = `${BASE_URL2}/Receita`;
-const baseDespesas = `${BASE_URL2}/Despesa`;
+const baseReceitas = `${BASE_URL}/Receita`;
+const baseDespesas = `${BASE_URL}/Despesa`;
 const baseAportes = `${BASE_URL}/Aporte`;
-const baseCategoriasR = `${BASE_URL2}/CategoriaReceita`;
-const baseCategoriasD = `${BASE_URL2}/CategoriaDespesa`;
+const baseCategoriasR = `${BASE_URL}/CategoriaReceita`;
+const baseCategoriasD = `${BASE_URL}/CategoriaDespesa`;
 const baseMetas = `${BASE_URL}/MetaFinanceira`;
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);

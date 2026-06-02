@@ -11,14 +11,14 @@ import annotationPlugin from 'chartjs-plugin-annotation';
 import '../custom.css';
 
 import axios from 'axios';
-import { BASE_URL, BASE_URL2 } from '../config/axios';
+import { BASE_URL } from '../config/axios';
 import { borderRadius } from '@mui/system';
 
-const baseReceitas = `${BASE_URL2}/Receita`;
-const baseDespesas = `${BASE_URL2}/Despesa`;
+const baseReceitas = `${BASE_URL}/Receita`;
+const baseDespesas = `${BASE_URL}/Despesa`;
 const baseAportes = `${BASE_URL}/Aporte`;
-const baseCategoriasR = `${BASE_URL2}/CategoriaReceita`;
-const baseCategoriasD = `${BASE_URL2}/CategoriaDespesa`;
+const baseCategoriasR = `${BASE_URL}/CategoriaReceita`;
+const baseCategoriasD = `${BASE_URL}/CategoriaDespesa`;
 const baseMetas = `${BASE_URL}/MetaFinanceira`;
 const baseFormasPagamento = `${BASE_URL}/FormaPagamento`;
 

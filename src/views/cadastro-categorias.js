@@ -10,10 +10,10 @@ import { mensagemSucesso, mensagemErro } from '../components/toastr';
 import '../custom.css';
 
 import axios from 'axios';
-import { BASE_URL2 } from '../config/axios';
+import { BASE_URL } from '../config/axios';
 
-const baseReceitas = `${BASE_URL2}/CategoriaReceita`;
-const baseDespesas = `${BASE_URL2}/CategoriaDespesa`;
+const baseReceitas = `${BASE_URL}/CategoriaReceita`;
+const baseDespesas = `${BASE_URL}/CategoriaDespesa`;
 
 function CadastroCategoria() {
   const { idParam } = useParams();

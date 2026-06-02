@@ -1,5 +1,5 @@
 import React, { useState, useEffect, use } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
 import Card from '../components/card';
@@ -12,27 +12,29 @@ import '../custom.css';
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
-function ListagemPerfil() {
-    const navigate = useNavigate();
 
-    const baseURL = `${BASE_URL}/Cliente/1`;
+function ListagemPerfil() {
+    const { idParam } = useParams();
+    const navigate = useNavigate();
+    const baseURL = `${BASE_URL}/clientes`;
+
 
     const [id, setId] = useState('');
     const [nome, setNome] = useState('');
     const [telefone, setTelefone] = useState('');
     const [email, setEmail] = useState('');
-    const [senhaAntiga, setSenhaAntiga] = useState('');
     const [novaSenha, setNovaSenha] = useState('');
     const [confirmarSenha, setConfirmarSenha] = useState('');
 
     const [dadosOriginais, setDadosOriginais] = useState(null);
 
     function inicializar() {
+        if (!dadosOriginais) return;
+
         setId(dadosOriginais.id ?? '');
         setNome(dadosOriginais.nome ?? '');
         setTelefone(dadosOriginais.telefone ?? '');
         setEmail(dadosOriginais.email ?? '');
-        setSenhaAntiga('');
         setNovaSenha('');
         setConfirmarSenha('');
     }
@@ -52,7 +54,7 @@ function ListagemPerfil() {
         };
 
         try {
-            await axios.put(baseURL, JSON.stringify(data), {
+            await axios.put(`${baseURL}/${idParam}`, data, {
                 headers: { 'Content-Type': 'application/json' },
             });
 
@@ -66,7 +68,7 @@ function ListagemPerfil() {
 
     async function buscar() {
         try {
-            const response = await axios.get(baseURL);
+            const response = await axios.get(`${baseURL}/${idParam}`);
             const data = response.data;
 
             setDadosOriginais(data);

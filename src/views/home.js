@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { BASE_URL2, BASE_URL } from '../config/axios';
+import { BASE_URL } from '../config/axios';
 import React from 'react';
 import Card from '../components/card';
 import BtnEdicao from '../components/btnEdicao';
@@ -16,9 +16,9 @@ function Home() {
         async function carregarDados() {
             try {
                 const [receitasRes, despesasRes, clienteRes] = await Promise.all([
-                    axios.get(`${BASE_URL2}/Receita`),
-                    axios.get(`${BASE_URL2}/Despesa`),
-                    axios.get(`${BASE_URL}/Cliente/1`)
+                    axios.get(`${BASE_URL}/Receita`),
+                    axios.get(`${BASE_URL}/Despesa`),
+                    axios.get(`${BASE_URL}/clientes`)
                 ]);
 
                 const soma = (lista) =>
