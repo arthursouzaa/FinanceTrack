@@ -47,7 +47,10 @@ function extrairUsuario(objeto) {
 }
 
 export function salvarUsuarioLogado(usuario) {
-  const usuarioNormalizado = Array.isArray(usuario) ? extrairUsuario(usuario[0]) : extrairUsuario(usuario);
+  // Se for um array, pega o ÚLTIMO cliente (o mais recente)
+  const usuarioNormalizado = Array.isArray(usuario) 
+    ? extrairUsuario(usuario[usuario.length - 1]) 
+    : extrairUsuario(usuario);
 
   if (!usuarioNormalizado || typeof window === 'undefined' || !window.localStorage) {
     return usuarioNormalizado;

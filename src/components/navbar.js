@@ -1,9 +1,19 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import logo from '../assets/financetrack-logo.png';
 import NavbarItem from './navbarItem';
 import NavbarDropdown from './navbarDropdown';
 
 function Navbar(props) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Limpar localStorage
+    window.localStorage.clear();
+    // Redirecionar para login
+    navigate('/login');
+  };
+
   return (
     <div className='navbar navbar-expand-lg fixed-top navbar-dark bg-primary p-1' style={{ userSelect: 'none' }}>
       <div className='container-fluid'>
@@ -62,12 +72,18 @@ function Navbar(props) {
               icon='bi bi-bank'
             />
           </ul>
-          {/* <ul className='navbar-nav'>
-            <NavbarItem render='true' href='/' label='Entrar' />
+          <ul className='navbar-nav ms-auto'>
+            <li className='nav-item'>
+              <button
+                onClick={handleLogout}
+                className='nav-link btn btn-link'
+                style={{ textDecoration: 'none', color: 'white' }}
+              >
+                <i className='bi bi-box-arrow-right me-2'></i>
+                Sair
+              </button>
+            </li>
           </ul>
-          <ul className='navbar-nav'>
-            <NavbarItem render='true' href='/' label='Sair' />
-          </ul> */}
         </div>
       </div>
     </div>
