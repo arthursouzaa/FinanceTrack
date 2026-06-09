@@ -16,7 +16,7 @@ function CadastroAporte() {
     const { idParam } = useParams();
     const navigate = useNavigate();
 
-    const baseURL = `${BASE_URL}/Aporte`;
+    const baseURL = `${BASE_URL}/aportes`;
 
     const [id, setId] = useState('');
     const [valor, setValor] = useState('');
@@ -93,7 +93,7 @@ function CadastroAporte() {
 
     async function buscarMetasFinanceiras() {
         try {
-            const response = await axios.get(`${BASE_URL}/MetaFinanceira`);
+            const response = await axios.get(`${BASE_URL}/metasFinanceiras`);
             setDadosMetasFinanceiras(response.data);
         } catch (error) {
             mensagemErro('Erro ao carregar metas financeiras');

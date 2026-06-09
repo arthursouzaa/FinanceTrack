@@ -12,8 +12,8 @@ import '../custom.css';
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
-const baseReceitas = `${BASE_URL}/CategoriaReceita`;
-const baseDespesas = `${BASE_URL}/CategoriaDespesa`;
+const baseReceitas = `${BASE_URL}/categoriasReceita`;
+const baseDespesas = `${BASE_URL}/categoriasDespesa`;
 
 function CadastroCategoria() {
   const { idParam } = useParams();

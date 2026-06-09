@@ -15,12 +15,13 @@ import EditIcon from '@mui/icons-material/Edit';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
 
-const baseReceitas = `${BASE_URL}/Receita`;
-const baseDespesas = `${BASE_URL}/Despesa`;
-const baseCategoriasR = `${BASE_URL}/CategoriaReceita`;
-const baseCategoriasD = `${BASE_URL}/CategoriaDespesa`;
-const baseFormasPagamento = `${BASE_URL}/FormaPagamento`;
+const baseReceitas = `${BASE_URL}/receitas`;
+const baseDespesas = `${BASE_URL}/despesas`;
+const baseCategoriasR = `${BASE_URL}/categoriasReceita`;
+const baseCategoriasD = `${BASE_URL}/categoriasDespesa`;
+const baseFormasPagamento = `${BASE_URL}/formasPagamento`;
 
 function ListagemLancamentos() {
   const navigate = useNavigate();
@@ -101,19 +102,19 @@ function ListagemLancamentos() {
 
   React.useEffect(() => {
     axios.get(baseReceitas).then((response) => {
-      setDadosReceitas(response.data);
+      setDadosReceitas(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseDespesas).then((response) => {
-      setDadosDespesas(response.data);
+      setDadosDespesas(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseCategoriasR).then((response) => {
-      setDadosCategoriasReceita(response.data);
+      setDadosCategoriasReceita(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseCategoriasD).then((response) => {
-      setDadosCategoriasDespesa(response.data);
+      setDadosCategoriasDespesa(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseFormasPagamento).then((response) => {
-      setDadosFormasPagamento(response.data);
+      setDadosFormasPagamento(filtrarRegistrosDoUsuario(response.data));
     });
   }, []);
 

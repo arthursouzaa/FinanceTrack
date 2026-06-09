@@ -13,14 +13,15 @@ import '../custom.css';
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 import { borderRadius } from '@mui/system';
+import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
 
-const baseReceitas = `${BASE_URL}/Receita`;
-const baseDespesas = `${BASE_URL}/Despesa`;
-const baseAportes = `${BASE_URL}/Aporte`;
-const baseCategoriasR = `${BASE_URL}/CategoriaReceita`;
-const baseCategoriasD = `${BASE_URL}/CategoriaDespesa`;
-const baseMetas = `${BASE_URL}/MetaFinanceira`;
-const baseFormasPagamento = `${BASE_URL}/FormaPagamento`;
+const baseReceitas = `${BASE_URL}/receitas`;
+const baseDespesas = `${BASE_URL}/despesas`;
+const baseAportes = `${BASE_URL}/aportes`;
+const baseCategoriasR = `${BASE_URL}/categoriasReceita`;
+const baseCategoriasD = `${BASE_URL}/categoriasDespesa`;
+const baseMetas = `${BASE_URL}/metasFinanceiras`;
+const baseFormasPagamento = `${BASE_URL}/formasPagamento`;
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement, annotationPlugin);
 
@@ -36,25 +37,25 @@ function RelatorioAnual() {
 
   React.useEffect(() => {
     axios.get(baseReceitas).then((response) => {
-      setReceitas(response.data);
+      setReceitas(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseDespesas).then((response) => {
-      setDespesas(response.data);
+      setDespesas(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseAportes).then((response) => {
-      setAportes(response.data);
+      setAportes(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseFormasPagamento).then((response) => {
-      setFormasPagamento(response.data);
+      setFormasPagamento(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseCategoriasR).then((response) => {
-      setDadosCategoriasReceita(response.data);
+      setDadosCategoriasReceita(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseCategoriasD).then((response) => {
-      setDadosCategoriasDespesa(response.data);
+      setDadosCategoriasDespesa(filtrarRegistrosDoUsuario(response.data));
     });
     axios.get(baseMetas).then((response) => {
-      setDadosMetasFinanceiras(response.data);
+      setDadosMetasFinanceiras(filtrarRegistrosDoUsuario(response.data));
     });
   }, []);
 

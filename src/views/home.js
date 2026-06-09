@@ -2,32 +2,39 @@
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 import React from 'react';
-import Card from '../components/card';
 import BtnEdicao from '../components/btnEdicao';
 import "../styles/home.css"
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { filtrarRegistrosDoUsuario, salvarUsuarioLogado, obterIdUsuarioLogado } from '../utils/usuarioLogado';
 
 function Home() {
     const [totalReceitas, setTotalReceitas] = React.useState(0);
     const [totalDespesas, setTotalDespesas] = React.useState(0);
     const [nomeUsuario, setNomeUsuario] = React.useState('');
+    const [idUsuario, setIdUsuario] = React.useState(obterIdUsuarioLogado());
 
     React.useEffect(() => {
         async function carregarDados() {
             try {
+                const idUsuarioAtual = obterIdUsuarioLogado();
+
                 const [receitasRes, despesasRes, clienteRes] = await Promise.all([
-                    axios.get(`${BASE_URL}/Receita`),
-                    axios.get(`${BASE_URL}/Despesa`),
+                    axios.get(`${BASE_URL}/receitas`),
+                    axios.get(`${BASE_URL}/despesas`),
                     axios.get(`${BASE_URL}/clientes`)
                 ]);
 
                 const soma = (lista) =>
                     lista.reduce((acc, item) => acc + Number(item.valor || 0), 0);
 
-                setTotalReceitas(soma(receitasRes.data));
-                setTotalDespesas(soma(despesasRes.data));
-                setNomeUsuario(clienteRes.data.nome);
+                const receitasDoUsuario = filtrarRegistrosDoUsuario(receitasRes.data, idUsuarioAtual);
+                const despesasDoUsuario = filtrarRegistrosDoUsuario(despesasRes.data, idUsuarioAtual);
+                const cliente = salvarUsuarioLogado(clienteRes.data);
 
+                setTotalReceitas(soma(receitasDoUsuario));
+                setTotalDespesas(soma(despesasDoUsuario));
+                setNomeUsuario(cliente?.nome ?? clienteRes.data?.nome ?? '');
+                setIdUsuario((currentId) => cliente?.id ?? currentId ?? idUsuarioAtual);
             } catch {
                 // opcional: toastr de erro
             }
@@ -44,7 +51,7 @@ function Home() {
 
                 <div className="perfil" style={{ padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <i className="bi bi-person-circle" alt="Imagem de perfil" style={{ fontSize: 70, marginBottom: -10 }}></i>
-                    <span className="nome-usuario" style={{ margin: 0 }}>{nomeUsuario.split(' ')[0]}</span>
+                    <span className="nome-usuario" style={{ margin: 0 }}>{nomeUsuario ? nomeUsuario.split(' ')[0] : 'Usuário'}</span>
                 </div>
 
                 <div className="conteudo">
@@ -59,7 +66,7 @@ function Home() {
                     <div className="botoes">
                         <BtnEdicao
                             render='true'
-                            href='/listagem-perfil'
+                            href={idUsuario ? `/listagem-perfil/${idUsuario}` : '/listagem-perfil'}
                             label='Editar Perfil '
                         />
                         <BtnEdicao

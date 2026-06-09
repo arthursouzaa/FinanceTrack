@@ -8,12 +8,13 @@ import { mensagemSucesso, mensagemErro } from '../components/toastr';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
 
 import '../custom.css';
 
-const baseDespesas = `${BASE_URL}/Despesa`;
-const baseCategoriasDespesa = `${BASE_URL}/CategoriaDespesa`;
-const baseFormasPagamento = `${BASE_URL}/FormaPagamento`;
+const baseDespesas = `${BASE_URL}/despesas`;
+const baseCategoriasDespesa = `${BASE_URL}/categoriasDespesa`;
+const baseFormasPagamento = `${BASE_URL}/formasPagamento`;
 
 function ListagemPagamentos() {
   const navigate = useNavigate();
@@ -32,9 +33,9 @@ function ListagemPagamentos() {
       axios.get(baseFormasPagamento),
     ])
       .then(([despesasRes, categoriasRes, formasRes]) => {
-        setDespesas(despesasRes.data);
-        setCategorias(categoriasRes.data);
-        setFormasPagamento(formasRes.data);
+        setDespesas(filtrarRegistrosDoUsuario(despesasRes.data));
+        setCategorias(filtrarRegistrosDoUsuario(categoriasRes.data));
+        setFormasPagamento(filtrarRegistrosDoUsuario(formasRes.data));
       })
       .catch(() => mensagemErro('Erro ao carregar dados'));
   }, []);

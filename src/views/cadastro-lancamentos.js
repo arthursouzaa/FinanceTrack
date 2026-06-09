@@ -12,8 +12,8 @@ import '../custom.css';
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
 
-const baseReceitas = `${BASE_URL}/Receita`;
-const baseDespesas = `${BASE_URL}/Despesa`;
+const baseReceitas = `${BASE_URL}/receitas`;
+const baseDespesas = `${BASE_URL}/despesas`;
 
 function CadastroLancamento() {
   const { idParam } = useParams();
@@ -144,9 +144,9 @@ function CadastroLancamento() {
   async function carregarListas() {
     try {
       const [fp, cr, cd] = await Promise.all([
-        axios.get(`${BASE_URL}/FormaPagamento`),
-        axios.get(`${BASE_URL}/CategoriaReceita`),
-        axios.get(`${BASE_URL}/CategoriaDespesa`)
+        axios.get(`${BASE_URL}/formasPagamento`),
+        axios.get(`${BASE_URL}/categoriasReceita`),
+        axios.get(`${BASE_URL}/categoriasDespesa`)
       ]);
 
       setFormasPagamento(fp.data);

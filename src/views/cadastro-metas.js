@@ -16,7 +16,7 @@ function CadastroMeta() {
   const { idParam } = useParams();
   const navigate = useNavigate();
 
-  const baseURL = `${BASE_URL}/MetaFinanceira`;
+  const baseURL = `${BASE_URL}/metasFinanceiras`;
 
   const [id, setId] = useState('');
   const [nome, setNome] = useState('');

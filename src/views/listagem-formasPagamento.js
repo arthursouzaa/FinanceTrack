@@ -15,8 +15,9 @@ import EditIcon from '@mui/icons-material/Edit';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
 
-const baseURL = `${BASE_URL}/FormaPagamento`;
+const baseURL = `${BASE_URL}/formasPagamento`;
 
 function ListagemFormasPagamento() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ function ListagemFormasPagamento() {
 
   React.useEffect(() => {
     axios.get(baseURL).then((response) => {
-      setDados(response.data);
+      setDados(filtrarRegistrosDoUsuario(response.data));
     });
   }, []);
 

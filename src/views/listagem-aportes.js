@@ -15,8 +15,9 @@ import EditIcon from '@mui/icons-material/Edit';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
 
-const baseURL = `${BASE_URL}/Aporte`;
+const baseURL = `${BASE_URL}/aportes`;
 
 function ListagemAportes() {
   const navigate = useNavigate();
@@ -60,14 +61,14 @@ function ListagemAportes() {
   }
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/MetaFinanceira`).then((response) => {
+    axios.get(`${BASE_URL}/metasFinanceiras`).then((response) => {
       setDadosMetasFinanceiras(response.data);
     });
   }, []);
 
   React.useEffect(() => {
     axios.get(baseURL).then((response) => {
-      setDados(response.data);
+      setDados(filtrarRegistrosDoUsuario(response.data));
 
     });
   }, []);

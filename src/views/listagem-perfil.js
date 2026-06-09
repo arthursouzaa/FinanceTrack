@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
@@ -11,12 +11,15 @@ import '../custom.css';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { obterIdUsuarioLogado, salvarUsuarioLogado } from '../utils/usuarioLogado';
 
 
 function ListagemPerfil() {
     const { idParam } = useParams();
     const navigate = useNavigate();
     const baseURL = `${BASE_URL}/clientes`;
+    const idUsuarioLogado = obterIdUsuarioLogado();
+    const [idPerfil, setIdPerfil] = useState(idParam ?? idUsuarioLogado);
 
 
     const [id, setId] = useState('');
@@ -45,6 +48,11 @@ function ListagemPerfil() {
             return;
         }
 
+        if (!idPerfil) {
+            mensagemErro('Não foi possível identificar o usuário logado');
+            return;
+        }
+
         const data = {
             id,
             nome,
@@ -54,13 +62,13 @@ function ListagemPerfil() {
         };
 
         try {
-            await axios.put(`${baseURL}/${idParam}`, data, {
+            await axios.put(`${baseURL}/${idPerfil}`, data, {
                 headers: { 'Content-Type': 'application/json' },
             });
 
             mensagemSucesso('Perfil atualizado com sucesso!');
 
-            navigate('/#');
+            navigate('/');
         } catch (error) {
             mensagemErro('Erro ao atualizar perfil');
         }
@@ -68,18 +76,59 @@ function ListagemPerfil() {
 
     async function buscar() {
         try {
-            const response = await axios.get(`${baseURL}/${idParam}`);
-            const data = response.data;
+            const response = idParam || idPerfil
+                ? await axios.get(`${baseURL}/${idParam ?? idPerfil}`)
+                : await axios.get(baseURL);
+
+            const data = Array.isArray(response.data) ? response.data[0] : response.data;
+
+            if (!data) {
+                mensagemErro('Nenhum usuário foi encontrado para carregar o perfil');
+                return;
+            }
+
+            const usuario = salvarUsuarioLogado(data);
+            const idAtual = usuario?.id ?? data.id ?? '';
 
             setDadosOriginais(data);
 
-            setId(data.id ?? '');
+            setId(idAtual);
+            setIdPerfil(idAtual);
             setNome(data.nome ?? '');
             setTelefone(data.telefone ?? '');
             setEmail(data.email ?? '');
             setNovaSenha('');
             setConfirmarSenha('');
         } catch (error) {
+            if (error?.response?.status === 404) {
+                try {
+                    const listResponse = await axios.get(baseURL);
+                    const listaClientes = Array.isArray(listResponse.data) ? listResponse.data : [];
+                    const primeiroCliente = listaClientes[0];
+
+                    if (!primeiroCliente) {
+                        mensagemErro('Nenhum usuário foi encontrado para carregar o perfil');
+                        return;
+                    }
+
+                    const usuario = salvarUsuarioLogado(primeiroCliente);
+                    const idAtual = usuario?.id ?? primeiroCliente.id ?? '';
+
+                    setDadosOriginais(primeiroCliente);
+                    setId(idAtual);
+                    setIdPerfil(idAtual);
+                    setNome(primeiroCliente.nome ?? '');
+                    setTelefone(primeiroCliente.telefone ?? '');
+                    setEmail(primeiroCliente.email ?? '');
+                    setNovaSenha('');
+                    setConfirmarSenha('');
+                    return;
+                } catch {
+                    mensagemErro('Erro ao carregar dados do perfil');
+                    return;
+                }
+            }
+
             mensagemErro('Erro ao carregar dados do perfil');
         }
     }
@@ -87,7 +136,7 @@ function ListagemPerfil() {
     useEffect(() => {
         buscar();
         // eslint-disable-next-line
-    }, []);
+    }, [idParam]);
 
     return (
         <div className='container'>
