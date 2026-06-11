@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
+import { IconButton } from '@mui/material';
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
 
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
+import { obterUsuarioLogado } from '../utils/usuarioLogado';
+
 
 import '../custom.css';
 
@@ -65,20 +68,45 @@ function CadastroLancamento() {
     setQuantidadeParcelas(dadosOriginais.quantidadeParcelas ?? '');
   }
 
+  // 1. Certifique-se de que a importação correta está no topo do arquivo:
+  // Se o seu utilitário exporta uma função para buscar o objeto ou o ID, use-a. 
+  // Geralmente ela se chama obterUsuarioLogado, obterIdUsuarioLogado ou o próprio filtrarRegistrosDoUsuario.
+
+  // ... dentro do componente CadastroLancamento:
+
   async function salvar() {
+    // 2. Utiliza o padrão do seu projeto para buscar o usuário/cliente logado
+    const usuarioLogado = obterUsuarioLogado();
+    const idUsuarioAtual = usuarioLogado?.id ? Number(usuarioLogado.id) : null;
+
+    if (!idUsuarioAtual) {
+      mensagemErro('Erro: Usuário não identificado. Faça login novamente.');
+      return;
+    }
+
+    // 3. Estrutura base comum com os IDs de vínculo
     const payload = {
-      id,
-      tipo,
+      id: id || null,
       nome,
       data,
-      idCategoria: idCategoria || null,
       volume,
-      valor,
-      idFormaPagamento: tipo === 'Despesa' ? idFormaPagamento || null : null,
-      parcelada: tipo === 'Despesa' ? parcelada : false,
-      quantidadeParcelas:
-        tipo === 'Despesa' && parcelada ? quantidadeParcelas : null
+      valor: valor ? Number(valor) : null,
+      idCliente: idUsuarioAtual,
+      idUsuario: idUsuarioAtual
     };
+
+    // 4. Mapeamento condicional estrito para o Java
+    if (tipo === 'Receita') {
+      payload.idCategoriaReceita = idCategoria ? Number(idCategoria) : null;
+      payload.idFormaPagamento = null;
+      payload.parcelada = false;
+      payload.quantidadeParcelas = null;
+    } else {
+      payload.idCategoriaDespesa = idCategoria ? Number(idCategoria) : null;
+      payload.idFormaPagamento = idFormaPagamento ? Number(idFormaPagamento) : null;
+      payload.parcelada = parcelada;
+      payload.quantidadeParcelas = parcelada && quantidadeParcelas ? Number(quantidadeParcelas) : null;
+    }
 
     try {
       if (!idParam) {
@@ -97,7 +125,9 @@ function CadastroLancamento() {
 
       navigate('/listagem-lancamentos');
     } catch (error) {
-      mensagemErro(error?.response?.data || 'Erro ao salvar lançamento');
+      console.error(error);
+      const mensagemDoServidor = error?.response?.data?.message || error?.response?.data;
+      mensagemErro(mensagemDoServidor || 'Erro ao salvar lançamento');
     }
   }
 
@@ -136,7 +166,8 @@ function CadastroLancamento() {
       setIdFormaPagamento(snapshot.idFormaPagamento ?? '');
       setParcelada(snapshot.parcelada ?? false);
       setQuantidadeParcelas(snapshot.quantidadeParcelas ?? '');
-    } catch {
+    } catch (error) {
+      console.error(error);
       mensagemErro('Erro ao buscar lançamento');
     }
   }
@@ -152,7 +183,8 @@ function CadastroLancamento() {
       setFormasPagamento(fp.data);
       setCategoriasReceita(cr.data);
       setCategoriasDespesa(cd.data);
-    } catch {
+    } catch (error) {
+      console.error(error);
       mensagemErro('Erro ao carregar dados auxiliares');
     }
   }
@@ -164,6 +196,9 @@ function CadastroLancamento() {
   }, []);
 
   useEffect(() => {
+    // Evita o vazamento de IDs de categorias inválidos ao trocar o tipo de fluxo
+    setIdCategoria('');
+
     if (tipo === 'Receita') {
       setIdFormaPagamento('');
       setParcelada(false);

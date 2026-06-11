@@ -32,6 +32,7 @@ function ListagemPerfil() {
     const [carregando, setCarregando] = useState(true);
 
     async function salvar() {
+        // 1. Validações iniciais
         if (novaSenha && novaSenha !== confirmarSenha) {
             mensagemErro('As senhas não coincidem');
             return;
@@ -42,24 +43,35 @@ function ListagemPerfil() {
             return;
         }
 
+        // 2. Montagem do objeto de dados
         const data = {
             id: idParaCarregar,
             nome,
             telefone,
             email,
-            senha: novaSenha || undefined
         };
 
+        // Só adiciona a senha ao objeto se o usuário realmente digitou uma nova
+        if (novaSenha) {
+            data.senha = novaSenha;
+            data.senhaConfirmada = confirmarSenha;
+        }
+
+        // 3. Requisição para a API
         try {
+            // Removido o document.write que quebrava a tela
+            console.log(`Enviando para: ${baseURL}/${idParaCarregar}`, data);
+
             await axios.put(`${baseURL}/${idParaCarregar}`, data, {
                 headers: { 'Content-Type': 'application/json' },
             });
 
             mensagemSucesso('Perfil atualizado com sucesso!');
-            
+
             // Atualizar usuário na localStorage
             salvarUsuarioLogado({ id: idParaCarregar, nome, telefone, email });
 
+            // Redirecionar o usuário
             navigate('/');
         } catch (error) {
             mensagemErro('Erro ao atualizar perfil');

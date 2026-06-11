@@ -1,14 +1,8 @@
 import React from 'react';
-
 import Card from '../components/card';
-
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
-
 import '../custom.css';
-
 import { useNavigate } from 'react-router-dom';
-
-// import ListagemAportes from './listagem-aportes';
 
 import Stack from '@mui/material/Stack';
 import { IconButton } from '@mui/material';
@@ -24,6 +18,10 @@ const baseURL = `${BASE_URL}/metasFinanceiras`;
 function ListagemMetas() {
   const navigate = useNavigate();
 
+  const [dados, setDados] = React.useState(null);
+  const [dadosAportes, setDadosAportes] = React.useState([]);
+  const [statusFiltro, setStatusFiltro] = React.useState('');
+
   const cadastrar = () => {
     navigate(`/cadastro-metas`);
   };
@@ -32,29 +30,36 @@ function ListagemMetas() {
     navigate(`/cadastro-metas/${id}`);
   };
 
-  const [dados, setDados] = React.useState(null);
-  const [dadosAportes, setDadosAportes] = React.useState([]);
-  const [statusFiltro, setStatusFiltro] = React.useState('');
+  // Função auxiliar para formatar a data ISO vinda do backend para o formato MM/AAAA
+  const formatarDataParaMesAno = (dataIso) => {
+    if (!dataIso) return '—';
+    try {
+      const data = new Date(dataIso);
+      // Evita problemas de fuso horário local subtraindo os minutos de diferença se necessário, 
+      // mas para pegar o mês/ano puro, o getUTC é mais seguro:
+      const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
+      const ano = data.getUTCFullYear();
+      return `${mes}/${ano}`;
+    } catch {
+      return dataIso; // Caso não consiga converter, retorna o texto original
+    }
+  };
 
   async function excluir(id) {
-    let data = JSON.stringify({ id });
     let url = `${baseURL}/${id}`;
-    console.log(url);
-    await axios
-      .delete(url, data, {
+    
+    try {
+      await axios.delete(url, {
         headers: { 'Content-Type': 'application/json' },
-      })
-      .then(function (response) {
-        mensagemSucesso(`Meta excluída com sucesso!`);
-        setDados(
-          dados.filter((dado) => {
-            return dado.id !== id;
-          })
-        );
-      })
-      .catch(function (error) {
-        mensagemErro(`Erro ao excluir a meta`);
       });
+
+      mensagemSucesso(`Meta excluída com sucesso!`);
+      
+      setDados((dadosAtuais) => dadosAtuais.filter((dado) => dado.id !== id));
+    } catch (error) {
+      mensagemErro(`Erro ao excluir a meta`);
+      console.error(error);
+    }
   }
 
   React.useEffect(() => {
@@ -74,38 +79,30 @@ function ListagemMetas() {
       return Number.isFinite(n) ? n : 0;
     };
 
-    const aportes = (dadosAportes || []).filter((a) =>
-      a.idMetaFinanceira === meta.id
-    );
-
+    const aportes = (dadosAportes || []).filter((a) => a.idMetaFinanceira === meta.id);
     const totalAportes = aportes.reduce((sum, a) => sum + toNumber(a.valor ?? a.valorAporte ?? a.valor_aporte), 0);
-    return totalAportes + meta.investimentoInicial;
+    
+    return totalAportes + toNumber(meta.investimentoInicial);
   }
-
-  function totalInvestidoGeral() {
-    if (!dados || !dadosAportes) return 0;
-
-    return dados.reduce((acc, meta) => {
-      return acc + totalInvestido(meta);
-    }, 0);
-  }
-
-  if (!dados) return null;
-  if (!dadosAportes) return null;
 
   function isMetaConcluida(meta) {
     const total = totalInvestido(meta);
     return total >= Number(meta.valor);
   }
 
+  if (dados === null) {
+    return (
+      <div className="container mt-5 text-center">
+        <p>Carregando metas...</p>
+      </div>
+    );
+  }
+
   const metasFiltradas = dados.filter((meta) => {
     if (!statusFiltro) return true;
-
     const concluida = isMetaConcluida(meta);
-
     if (statusFiltro === 'CONCLUIDA') return concluida;
     if (statusFiltro === 'ABERTA') return !concluida;
-
     return true;
   });
 
@@ -114,118 +111,109 @@ function ListagemMetas() {
   }, 0);
 
   return (
-    <>
-      <div className='container'>
-        <Card title='Listagem de Metas Financeiras' icon="bi bi-cash-coin">
-          <p className='text-muted'>Consulte as suas metas financeiras</p>
- 
- 
-<Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
-              <label className='label-filtro'>
-                Selecione o status Concluído ou Em Aberto:
-              </label>
-              <select
-                className='form-select'
-                value={statusFiltro}
-                onChange={(e) => setStatusFiltro(e.target.value)}
-                style={{ width: 200 }}
-              >
-                <option value=''>Todos</option>
-                <option value='CONCLUIDA'>Concluída</option>
-                <option value='ABERTA'>Em Aberto</option>
-              </select></Stack>
+    <div className='container'>
+      <Card title='Listagem de Metas Financeiras' icon="bi bi-cash-coin">
+        <p className='text-muted'>Consulte as suas metas financeiras</p>
 
-          <div className='row mt-3 mb-3'>
-            <div className='col-md-2'>
-              <div className='resumo-card'>
-                <span className='resumo-titulo'>
-                  Total Investido
-                </span>
+        <Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
+          <label className='label-filtro'>
+            Selecione o status Concluído ou Em Aberto:
+          </label>
+          <select
+            className='form-select'
+            value={statusFiltro}
+            onChange={(e) => setStatusFiltro(e.target.value)}
+            style={{ width: 200 }}
+          >
+            <option value=''>Todos</option>
+            <option value='CONCLUIDA'>Concluída</option>
+            <option value='ABERTA'>Em Aberto</option>
+          </select>
+        </Stack>
 
-                <span className='resumo-valor'>
-                  {totalInvestidoFiltrado > 0
-                    ? totalInvestidoFiltrado.toLocaleString('pt-BR', {
+        <div className='row mt-3 mb-3'>
+          <div className='col-md-3'>
+            <div className='resumo-card'>
+              <span className='resumo-titulo'>Total Investido (Filtrado)</span>
+              <span className='resumo-valor'>
+                {totalInvestidoFiltrado > 0
+                  ? totalInvestidoFiltrado.toLocaleString('pt-BR', {
                       style: 'currency',
                       currency: 'BRL',
                     })
-                    : '—'}
-                </span>
-              </div>
+                  : 'R$ 0,00'}
+              </span>
             </div>
           </div>
+        </div>
 
-          <div className='row'>
-            <div className='col-lg-12'>
-              <div className='bs-component'>
-                <Stack spacing={1} direction='row' className='mb-3'>
-                  <button
-                    type='button'
-                    className='btn btn-primary'
-                    onClick={() => cadastrar()}
-                  >
-                    Nova Meta
-                  </button>
-                  <button
-                    onClick={() => navigate(-1)}
-                    type='button'
-                    className='btn btn-danger'
-                  >
-                    Cancelar
-                  </button>
-                </Stack>
+        <div className='row'>
+          <div className='col-lg-12'>
+            <div className='bs-component'>
+              <Stack spacing={1} direction='row' className='mb-3'>
+                <button type='button' className='btn btn-primary' onClick={cadastrar}>
+                  Nova Meta
+                </button>
+                <button onClick={() => navigate(-1)} type='button' className='btn btn-danger'>
+                  Cancelar
+                </button>
+              </Stack>
 
-                <table className='table table-hover'>
-                  <thead>
+              <table className='table table-hover'>
+                <thead>
+                  <tr>
+                    <th scope='col'>Nome</th>
+                    <th scope='col'>Data-Envio</th>
+                    <th scope='col'>Valor-Alvo</th>
+                    <th scope='col'>Data-Alvo</th>
+                    <th scope='col'>Total Investido</th>
+                    <th scope='col' style={{ width: '100px' }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {metasFiltradas.length === 0 ? (
                     <tr>
-                      <th scope='col'>Nome</th>
-                      <th scope='col'>Data-Envio</th>
-                      <th scope='col'>Valor-Alvo</th>
-                      <th scope='col'>Data-Alvo</th>
-                      <th scope='col'>Total Investido</th>
-                      <th scope='col' colSpan={2}>Ações</th>
+                      <td colSpan={6} className="text-center text-muted">Nenhuma meta encontrada.</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {metasFiltradas.map((dado) => (
+                  ) : (
+                    metasFiltradas.map((dado) => (
                       <tr key={dado.id}>
                         <td>{dado.nome}</td>
-                        <td>{dado.dataEnvio}</td>
+                        {/* Tratamento visual das datas utilizando a nova função */}
+                        <td>{formatarDataParaMesAno(dado.dataEnvio)}</td>
                         <td>
-                          {typeof dado.valor === 'number'
-                            ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                            : dado.valor
-                              ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                              : '—'}
+                          {dado.valor 
+                            ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                            : '—'}
                         </td>
-                        <td>{dado.dataAlvo}</td>
-                        <td>{totalInvestido(dado).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                        {/* Tratamento visual das datas utilizando a nova função */}
+                        <td>{formatarDataParaMesAno(dado.dataAlvo)}</td>
                         <td>
-                          <Stack spacing={1} padding={0} direction='row'>
-                            <IconButton
-                              aria-label='edit'
-                              onClick={() => editar(dado.id)}
-                            >
+                          {totalInvestido(dado).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </td>
+                        <td>
+                          <Stack spacing={1} direction='row'>
+                            <IconButton aria-label='edit' onClick={() => editar(dado.id)}>
                               <EditIcon />
                             </IconButton>
-                            <IconButton
-                              aria-label='delete'
-                              onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id) : event.preventDefault()}
+                            <IconButton 
+                              aria-label='delete' 
+                              onClick={() => window.confirm("Você realmente deseja excluir esta meta?") && excluir(dado.id)}
                             >
                               <DeleteIcon />
                             </IconButton>
                           </Stack>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>{' '}
-              </div>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        </Card>
-      </div>
-      <br></br>
-    </>
+        </div>
+      </Card>
+    </div>
   );
 }
 

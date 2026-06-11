@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
 
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
-
 import '../custom.css';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
 
 function CadastroAporte() {
-    const { idParam } = useParams();
-    const navigate = useNavigate();
+    // Captura o ID da URL de forma segura
+    const idParam = window.location.pathname.split('/').pop() !== 'cadastro-aportes'
+        ? window.location.pathname.split('/').pop()
+        : undefined;
 
+    const navigate = useNavigate();
     const baseURL = `${BASE_URL}/aportes`;
 
     const [id, setId] = useState('');
@@ -24,20 +27,26 @@ function CadastroAporte() {
     const [idMetaFinanceira, setIdMetaFinanceira] = useState('');
 
     const [dadosOriginais, setDadosOriginais] = useState(null);
-    const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = useState(null);
+    const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = useState([]);
+
+    // Helper para garantir que a data do backend caia perfeitamente no formato "YYYY-MM-DD" do input
+    const formatarParaInputData = (dataIso) => {
+        if (!dataIso) return '';
+        return dataIso.split('T')[0];
+    };
 
     function restaurarDados() {
         if (!dadosOriginais) {
             setId('');
             setValor('');
-            setData('');
+            setData(new Date().toISOString().split('T')[0]);
             setIdMetaFinanceira('');
             return;
         }
 
         setId(dadosOriginais.id ?? '');
         setValor(dadosOriginais.valor ?? '');
-        setData(dadosOriginais.data ?? '');
+        setData(formatarParaInputData(dadosOriginais.data ?? dadosOriginais.dataAporte));
         setIdMetaFinanceira(
             dadosOriginais.idMetaFinanceira
                 ? String(dadosOriginais.idMetaFinanceira)
@@ -46,12 +55,22 @@ function CadastroAporte() {
     }
 
     async function salvar() {
-        const payload = JSON.stringify({
-            id,
-            valor,
-            data,
-            idMetaFinanceira: idMetaFinanceira || null
-        });
+        if (!valor || !data || !idMetaFinanceira) {
+            mensagemErro('Por favor, preencha todos os campos obrigatórios (*)');
+            return;
+        }
+
+        // Monta o payload como objeto nativo (o Axios transforma em string JSON automaticamente)
+        const payload = {
+            valor: Number(valor),
+            data: data.includes('T') ? data : `${data}T00:00:00.000Z`, // Salva em ISO neutro
+            idMetaFinanceira: Number(idMetaFinanceira)
+        };
+
+        // Se for edição, injeta o ID no corpo
+        if (idParam) {
+            payload.id = Number(idParam);
+        }
 
         try {
             if (!idParam) {
@@ -73,7 +92,7 @@ function CadastroAporte() {
     }
 
     async function buscarAporte() {
-        if (!idParam) return;
+        if (!idParam || idParam === 'undefined') return;
 
         try {
             const response = await axios.get(`${baseURL}/${idParam}`);
@@ -83,6 +102,7 @@ function CadastroAporte() {
 
             setId(payload.id ?? '');
             setValor(payload.valor ?? '');
+            setData(formatarParaInputData(payload.data ?? payload.dataAporte));
             setIdMetaFinanceira(
                 payload.idMetaFinanceira ? String(payload.idMetaFinanceira) : ''
             );
@@ -94,7 +114,8 @@ function CadastroAporte() {
     async function buscarMetasFinanceiras() {
         try {
             const response = await axios.get(`${BASE_URL}/metasFinanceiras`);
-            setDadosMetasFinanceiras(response.data);
+            // CRUCIAL: Filtra para o select exibir APENAS as metas do usuário logado
+            setDadosMetasFinanceiras(filtrarRegistrosDoUsuario(response.data));
         } catch (error) {
             mensagemErro('Erro ao carregar metas financeiras');
         }
@@ -104,13 +125,11 @@ function CadastroAporte() {
         buscarMetasFinanceiras();
         buscarAporte();
         // eslint-disable-next-line
-    }, []);
-
-    if (!dadosMetasFinanceiras) return null;
+    }, [idParam]);
 
     return (
         <div className='container'>
-            <Card title='Cadastro de Aporte' icon="bi bi-cash">
+            <Card title={idParam ? 'Editar Aporte' : 'Cadastro de Aporte'} icon="bi bi-cash">
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>
@@ -120,6 +139,8 @@ function CadastroAporte() {
                                     type='number'
                                     id='inputValor'
                                     value={valor}
+                                    placeholder="0.00"
+                                    step="0.01"
                                     className='form-control'
                                     onChange={(e) => setValor(e.target.value)}
                                 />
@@ -135,14 +156,14 @@ function CadastroAporte() {
                                 />
                             </FormGroup>
 
-                            <FormGroup label='Meta Financeira:' htmlFor='selectMetaFinanceira'>
+                            <FormGroup label='Meta Financeira: *' htmlFor='selectMetaFinanceira'>
                                 <select
                                     className='form-select'
                                     id='selectMetaFinanceira'
                                     value={idMetaFinanceira}
                                     onChange={(e) => setIdMetaFinanceira(e.target.value)}
                                 >
-                                    <option value=''></option>
+                                    <option value=''>Selecione uma meta...</option>
                                     {dadosMetasFinanceiras.map((meta) => (
                                         <option key={meta.id} value={meta.id}>
                                             {meta.nome}
@@ -151,7 +172,7 @@ function CadastroAporte() {
                                 </select>
                             </FormGroup>
 
-                            <Stack spacing={1} padding={1} direction='row'>
+                            <Stack spacing={1} padding={1} direction='row' className="mt-3">
                                 <button
                                     onClick={salvar}
                                     type='button'
@@ -169,7 +190,7 @@ function CadastroAporte() {
                                 </button>
 
                                 <button
-                                    onClick={() => navigate(-1)}
+                                    onClick={() => navigate('/listagem-aportes')}
                                     type='button'
                                     className='btn btn-danger'
                                 >

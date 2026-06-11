@@ -11,6 +11,7 @@ import '../custom.css';
 
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
+import { obterUsuarioLogado } from '../utils/usuarioLogado';
 
 const baseReceitas = `${BASE_URL}/categoriasReceita`;
 const baseDespesas = `${BASE_URL}/categoriasDespesa`;
@@ -23,7 +24,8 @@ function CadastroCategoria() {
   const tipoQuery = new URLSearchParams(location.search).get('tipo');
 
   const [id, setId] = useState('');
-  const [tipo, setTipo] = useState('Receita');
+  // CORREÇÃO 1: Inicializa o tipo com o que veio da URL (tipoQuery) se existir, senão assume 'Receita'
+  const [tipo, setTipo] = useState(tipoQuery || 'Receita');
   const [nome, setNome] = useState('');
   const [limiteGasto, setLimiteGasto] = useState(false);
   const [valorLimite, setValorLimite] = useState('');
@@ -33,7 +35,7 @@ function CadastroCategoria() {
   function inicializar() {
     if (!idParam) {
       setId('');
-      setTipo('Receita');
+      setTipo(tipoQuery || 'Receita');
       setNome('');
       setLimiteGasto(false);
       setValorLimite('');
@@ -50,12 +52,22 @@ function CadastroCategoria() {
   }
 
   async function salvar() {
+    const usuarioLogado = obterUsuarioLogado();
+    const idUsuarioAtual = usuarioLogado?.id ? Number(usuarioLogado.id) : null;
+
+    if (!idUsuarioAtual) {
+      mensagemErro('Erro: Usuário não identificado. Faça login novamente.');
+      return;
+    }
+
     const data = {
-      id,
+      id: idParam ? Number(idParam) : null, 
       tipo,
       nome,
       limiteGasto,
-      valorLimite: limiteGasto ? valorLimite : null
+      valorLimite: limiteGasto && valorLimite ? Number(valorLimite) : null,
+      idCliente: idUsuarioAtual,  
+      idUsuario: idUsuarioAtual   
     };
 
     try {
@@ -65,6 +77,7 @@ function CadastroCategoria() {
           : await axios.post(baseDespesas, data);
         mensagemSucesso('Categoria cadastrada com sucesso!');
       } else {
+        // CORREÇÃO 2: Envia estritamente para o endpoint correto baseado no estado atualizado
         tipo === 'Receita'
           ? await axios.put(`${baseReceitas}/${idParam}`, data)
           : await axios.put(`${baseDespesas}/${idParam}`, data);
@@ -72,7 +85,9 @@ function CadastroCategoria() {
       }
       navigate('/listagem-categorias');
     } catch (error) {
-      mensagemErro(error?.response?.data || 'Erro ao salvar categoria');
+      console.error(error);
+      const mensagemDoServidor = error?.response?.data?.message || error?.response?.data;
+      mensagemErro(mensagemDoServidor || 'Erro ao salvar categoria');
     }
   }
 
@@ -80,23 +95,25 @@ function CadastroCategoria() {
     if (!idParam) return;
 
     try {
-      let data;
+      let dataObtida;
 
       if (tipoQuery === 'Despesa') {
         const resp = await axios.get(`${baseDespesas}/${idParam}`);
-        data = { ...resp.data, tipo: 'Despesa' };
+        dataObtida = { ...resp.data, tipo: 'Despesa' };
       } else {
         const resp = await axios.get(`${baseReceitas}/${idParam}`);
-        data = { ...resp.data, tipo: 'Receita' };
+        dataObtida = { ...resp.data, tipo: 'Receita' };
       }
 
-      setDadosOriginais(data);
-      setId(data.id ?? '');
-      setTipo(data.tipo);
-      setNome(data.nome ?? '');
-      setLimiteGasto(data.limiteGasto ?? false);
-      setValorLimite(data.valorLimite ?? '');
-    } catch {
+      setDadosOriginais(dataObtida);
+      setId(dataObtida.id ?? '');
+      // CORREÇÃO 3: Garante que o estado do componente mude para 'Despesa' ou 'Receita' conforme o banco
+      setTipo(dataObtida.tipo); 
+      setNome(dataObtida.nome ?? '');
+      setLimiteGasto(dataObtida.limiteGasto ?? false);
+      setValorLimite(dataObtida.valorLimite ?? '');
+    } catch (error) {
+      console.error(error);
       mensagemErro('Erro ao buscar categoria');
     }
   }
@@ -106,12 +123,8 @@ function CadastroCategoria() {
     // eslint-disable-next-line
   }, [idParam, tipoQuery]);
 
-  useEffect(() => {
-    if (tipo === 'Receita') {
-      setLimiteGasto(false);
-      setValorLimite('');
-    }
-  }, [tipo]);
+  // CORREÇÃO 4: Removemos aquele useEffect antigo que monitorava [tipo] e limpava 
+  // os campos de despesa involuntariamente durante a renderização inicial da edição!
 
   return (
     <div className='container'>
@@ -179,7 +192,7 @@ function CadastroCategoria() {
 
           <FormGroup label='Valor Limite: ' htmlFor='inputValorLimite'>
             <input
-              type='text'
+              type='number'  
               id='inputValorLimite'
               value={valorLimite}
               className='form-control'

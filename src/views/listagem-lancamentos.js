@@ -1,11 +1,7 @@
-import React from 'react';
-
+import React, { useState, useEffect } from 'react';
 import Card from '../components/card';
-
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
-
 import '../custom.css';
-
 import { useNavigate } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
@@ -26,63 +22,58 @@ const baseFormasPagamento = `${BASE_URL}/formasPagamento`;
 function ListagemLancamentos() {
   const navigate = useNavigate();
 
+  const [dadosReceitas, setDadosReceitas] = useState(null);
+  const [dadosDespesas, setDadosDespesas] = useState(null);
+  const [dadosCategoriasReceita, setDadosCategoriasReceita] = useState([]);
+  const [dadosCategoriasDespesa, setDadosCategoriasDespesa] = useState([]);
+  const [dadosFormasPagamento, setDadosFormasPagamento] = useState([]);
+  
+  const [filtroTipo, setFiltroTipo] = useState('Todos');
+  const [filtroMes, setFiltroMes] = useState('Todos');
+  const [filtroAno, setFiltroAno] = useState('Todos');
+
   const cadastrar = () => {
     navigate(`/cadastro-lancamentos`);
   };
 
   const editar = (id, tipo) => {
-    navigate(`/cadastro-lancamentos/${id}?tipo=${tipo}`)
+    navigate(`/cadastro-lancamentos/${id}?tipo=${tipo}`);
   };
 
-  const [dadosReceitas, setDadosReceitas] = React.useState(null);
-  const [dadosDespesas, setDadosDespesas] = React.useState(null);
-  const [dadosCategoriasReceita, setDadosCategoriasReceita] = React.useState([]);
-  const [dadosCategoriasDespesa, setDadosCategoriasDespesa] = React.useState([]);
-  const [dadosFormasPagamento, setDadosFormasPagamento] = React.useState([]);
-  const [filtroTipo, setFiltroTipo] = React.useState('Todas');
-  const [filtroMes, setFiltroMes] = React.useState('Todos');
-  const [filtroAno, setFiltroAno] = React.useState('Todos');
+  // Função robusta de data para exibição na tabela
+  const formatarDataParaExibicao = (dataIso) => {
+    if (!dataIso) return '—';
+    try {
+      const data = new Date(dataIso);
+      if (isNaN(data.getTime())) return dataIso;
+      const dia = String(data.getUTCDate()).padStart(2, '0');
+      const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
+      const ano = data.getUTCFullYear();
+      return `${dia}/${mes}/${ano}`;
+    } catch {
+      return dataIso;
+    }
+  };
 
   async function excluir(id, tipo) {
-    if (tipo == 'Receita') {
-      let data = JSON.stringify({ id });
-      let url = `${baseReceitas}/${id}`;
-      console.log(url);
-      await axios
-        .delete(url, data, {
-          headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function (response) {
-          mensagemSucesso(`Lançamento excluído com sucesso!`);
-          setDadosReceitas(
-            dadosReceitas.filter((dado) => {
-              return dado.id !== id;
-            })
-          );
-        })
-        .catch(function (error) {
-          mensagemErro(`Erro ao excluir o lançamento`);
-        });
-    }
-    if (tipo == 'Despesa') {
-      let data = JSON.stringify({ id });
-      let url = `${baseDespesas}/${id}`;
-      console.log(url);
-      await axios
-        .delete(url, data, {
-          headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function (response) {
-          mensagemSucesso(`Lançamento excluído com sucesso!`);
-          setDadosDespesas(
-            dadosDespesas.filter((dado) => {
-              return dado.id !== id;
-            })
-          );
-        })
-        .catch(function (error) {
-          mensagemErro(`Erro ao excluir o lançamento`);
-        });
+    const url = tipo === 'Receita' ? `${baseReceitas}/${id}` : `${baseDespesas}/${id}`;
+    
+    try {
+      // Correção estrutural do delete no Axios
+      await axios.delete(url, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      mensagemSucesso(`${tipo} excluída com sucesso!`);
+      
+      if (tipo === 'Receita') {
+        setDadosReceitas((atuais) => atuais.filter((dado) => dado.id !== id));
+      } else {
+        setDadosDespesas((atuais) => atuais.filter((dado) => dado.id !== id));
+      }
+    } catch (error) {
+      mensagemErro(`Erro ao excluir o lançamento`);
+      console.error(error);
     }
   }
 
@@ -100,12 +91,12 @@ function ListagemLancamentos() {
     return formaPagamento ? formaPagamento.nome : lancamento.idFormaPagamento ?? '—';
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     axios.get(baseReceitas).then((response) => {
-      setDadosReceitas(filtrarRegistrosDoUsuario(response.data));
+      setDadosReceitas(filtrarRegistrosDoUsuario(response.data).map(r => ({ ...r, tipo: 'Receita' })));
     });
     axios.get(baseDespesas).then((response) => {
-      setDadosDespesas(filtrarRegistrosDoUsuario(response.data));
+      setDadosDespesas(filtrarRegistrosDoUsuario(response.data).map(d => ({ ...d, tipo: 'Despesa' })));
     });
     axios.get(baseCategoriasR).then((response) => {
       setDadosCategoriasReceita(filtrarRegistrosDoUsuario(response.data));
@@ -118,11 +109,14 @@ function ListagemLancamentos() {
     });
   }, []);
 
-  if (!dadosReceitas) return null;
-  if (!dadosDespesas) return null;
-  if (!dadosCategoriasReceita) return null;
-  if (!dadosCategoriasDespesa) return null;
-  if (!dadosFormasPagamento) return null;
+  // Garante que o app não trave enquanto carrega os dados principais
+  if (dadosReceitas === null || dadosDespesas === null) {
+    return (
+      <div className="container mt-5 text-center">
+        <p>Carregando lançamentos...</p>
+      </div>
+    );
+  }
 
   function obterLancamentosFiltrados() {
     let lista = [];
@@ -134,63 +128,41 @@ function ListagemLancamentos() {
     return lista.filter((lancamento) => {
       if (!lancamento.data) return true;
 
-      const mes = extrairMes(lancamento.data);
-      const ano = extrairAno(lancamento.data);
+      // Extrações baseadas em UTC para evitar dessincronização de fuso horário
+      const dataObj = new Date(lancamento.data);
+      const mes = dataObj.getUTCMonth() + 1;
+      const ano = dataObj.getUTCFullYear();
 
-      const filtraMes =
-        filtroMes === 'Todos' || mes === Number(filtroMes);
-
-      const filtraAno =
-        filtroAno === 'Todos' || ano === Number(filtroAno);
+      const filtraMes = filtroMes === 'Todos' || mes === Number(filtroMes);
+      const filtraAno = filtroAno === 'Todos' || ano === Number(filtroAno);
 
       return filtraMes && filtraAno;
     });
   }
 
-  function extrairMes(data) {
-    return new Date(data).getMonth() + 1; // 1 a 12
-  }
-
-  function extrairAno(data) {
-    return new Date(data).getFullYear();
-  }
-
   function obterAnosDisponiveis() {
-    const todasDatas = [
-      ...dadosReceitas,
-      ...dadosDespesas
-    ]
-      .filter(l => l.data)
-      .map(l => new Date(l.data).getFullYear());
+    const todasDatas = [...dadosReceitas, ...dadosDespesas]
+      .filter((l) => l.data)
+      .map((l) => new Date(l.data).getUTCFullYear());
 
     const anosUnicos = [...new Set(todasDatas)];
-
     return anosUnicos.sort((a, b) => b - a);
   }
 
   function somarValores(lista) {
-    return lista.reduce((acc, item) => {
-      const valor = Number(item.valor) || 0;
-      return acc + valor;
-    }, 0);
+    return lista.reduce((acc, item) => acc + (Number(item.valor) || 0), 0);
   }
 
   function formatarMoeda(valor) {
     return valor.toLocaleString('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     });
   }
 
   const lancamentosFiltrados = obterLancamentosFiltrados();
-
-  const receitasFiltradas = lancamentosFiltrados.filter(
-    (l) => l.tipo === 'Receita'
-  );
-
-  const despesasFiltradas = lancamentosFiltrados.filter(
-    (l) => l.tipo === 'Despesa'
-  );
+  const receitasFiltradas = lancamentosFiltrados.filter((l) => l.tipo === 'Receita');
+  const despesasFiltradas = lancamentosFiltrados.filter((l) => l.tipo === 'Despesa');
 
   const totalReceitas = somarValores(receitasFiltradas);
   const totalDespesas = somarValores(despesasFiltradas);
@@ -218,8 +190,7 @@ function ListagemLancamentos() {
                 </select>
               </Stack>
 
-
-        <strong className='label-filtro' >Selecione o período:</strong>
+              <strong className='label-filtro'>Selecione o período:</strong>
               <Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
                 <label><strong>Mês:</strong></label>
                 <select
@@ -259,7 +230,7 @@ function ListagemLancamentos() {
                 </select>
               </Stack>
 
-              <Stack spacing={2} direction="row" sx={{ mt:2, mb: 2 }}>
+              <Stack spacing={2} direction="row" sx={{ mt: 2, mb: 2 }}>
                 <div className="resumo-card receita">
                   <span className="resumo-titulo">Receitas</span>
                   <span className="resumo-valor positivo">
@@ -270,16 +241,16 @@ function ListagemLancamentos() {
                 <div className="resumo-card despesa">
                   <span className="resumo-titulo">Despesas</span>
                   <span className="resumo-valor negativo">
-                    {totalDespesas > 0 ? formatarMoeda(totalDespesas) : '—'} ▲
+                    {totalDespesas > 0 ? formatarMoeda(totalDespesas) : '—'} ▼
                   </span>
                 </div>
               </Stack>
 
-              <Stack spacing={1} direction='row'>
+              <Stack spacing={1} direction='row' marginBottom={3}>
                 <button
                   type='button'
                   className='btn btn-primary'
-                  onClick={() => cadastrar()}
+                  onClick={cadastrar}
                 >
                   Novo Lançamento
                 </button>
@@ -303,50 +274,59 @@ function ListagemLancamentos() {
                     <th scope='col'>Valor</th>
                     <th scope='col'>Forma de Pagamento</th>
                     <th scope='col'>Parcelada</th>
-                    <th scope='col' colSpan={2}>Ações</th>
+                    <th scope='col' style={{ width: '100px' }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {obterLancamentosFiltrados().map((dado) => (
-                    <tr key={`${dado.tipo}-${dado.id}`}>
-                      <td>{dado.tipo}</td>
-                      <td>{dado.nome}</td>
-                      <td>{dado.data ? new Date(dado.data).toLocaleDateString('pt-BR') : '—'}</td>
-                      <td>{nomeCategoria(dado)}</td>
-                      <td>{dado.volume ? 'Fixa' : 'Única'}</td>
-                      <td>
-                        {typeof dado.valor === 'number'
-                          ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : dado.valor
-                            ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                            : '—'}
-                      </td>
-                      <td>{nomeFormaPagamento(dado)}</td>
-                      <td>{dado.parcelada ? `${dado.quantidadeParcelas}x` : 'Não'}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction="row">
-                          <IconButton
-                            aria-label="edit"
-                            onClick={() => editar(dado.id, dado.tipo)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label="delete"
-                            onClick={(event) =>
-                              window.confirm('Você realmente deseja excluir?')
-                                ? excluir(dado.id, dado.tipo)
-                                : event.preventDefault()
-                            }
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
+                  {lancamentosFiltrados.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="text-center text-muted">
+                        Nenhum lançamento encontrado para os filtros selecionados.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    lancamentosFiltrados.map((dado) => (
+                      <tr key={`${dado.tipo}-${dado.id}`}>
+                        <td>
+                          <span className={`badge ${dado.tipo === 'Receita' ? 'bg-success' : 'bg-danger'}`}>
+                            {dado.tipo}
+                          </span>
+                        </td>
+                        <td>{dado.nome}</td>
+                        <td>{formatarDataParaExibicao(dado.data)}</td>
+                        <td>{nomeCategoria(dado)}</td>
+                        <td>{dado.volume ? 'Fixa' : 'Única'}</td>
+                        <td>
+                          {dado.valor
+                            ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                            : '—'}
+                        </td>
+                        <td>{nomeFormaPagamento(dado)}</td>
+                        <td>{dado.parcelada ? `${dado.quantidadeParcelas}x` : 'Não'}</td>
+                        <td>
+                          <Stack spacing={1} padding={0} direction="row">
+                            <IconButton
+                              aria-label="edit"
+                              onClick={() => editar(dado.id, dado.tipo)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label="delete"
+                              onClick={() =>
+                                window.confirm('Você realmente deseja excluir este lançamento?') &&
+                                excluir(dado.id, dado.tipo)
+                              }
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
-              </table>{' '}
+              </table>
             </div>
           </div>
         </div>

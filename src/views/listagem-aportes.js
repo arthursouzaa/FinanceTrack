@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-
 import Card from '../components/card';
-
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
-
 import '../custom.css';
-
 import { useNavigate } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
@@ -22,58 +18,99 @@ const baseURL = `${BASE_URL}/aportes`;
 function ListagemAportes() {
   const navigate = useNavigate();
 
+  const [todosAportes, setTodosAportes] = useState([]); // Guarda o retorno bruto do servidor
+  const [dados, setDados] = useState([]); // Guarda apenas os aportes filtrados do usuário
+  const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = useState([]);
+
   const cadastrar = () => {
     navigate(`/cadastro-aportes`);
   };
 
-  const editar = (id) => {
-    navigate(`/cadastro-aportes/${id}`);
+  const editar = (aporte) => {
+    const idAporte = aporte.id ?? aporte.idAporte;
+    if (idAporte) {
+      navigate(`/cadastro-aportes/${idAporte}`);
+    } else {
+      mensagemErro('Não foi possível identificar o ID deste aporte.');
+    }
   };
 
-  const [dados, setDados] = useState([]);
+  const formatarDataParaExibicao = (dataIso) => {
+    if (!dataIso) return '—';
+    try {
+      const data = new Date(dataIso);
+      const dia = String(data.getUTCDate()).padStart(2, '0');
+      const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
+      const ano = data.getUTCFullYear();
+      return `${dia}/${mes}/${ano}`;
+    } catch {
+      return dataIso;
+    }
+  };
 
   async function excluir(id) {
-    let payload = JSON.stringify({ id });
     let url = `${baseURL}/${id}`;
-    console.log(url);
-    await axios
-      .delete(url, payload, {
+    try {
+      await axios.delete(url, {
         headers: { 'Content-Type': 'application/json' },
-      })
-      .then(function (response) {
-        mensagemSucesso(`Aporte excluído com sucesso!`);
-        setDados(
-          dados.filter((dado) => {
-            return dado.id !== id;
-          })
-        );
-      })
-      .catch(function (error) {
-        mensagemErro(`Erro ao excluir o aporte`);
       });
+
+      mensagemSucesso(`Aporte excluído com sucesso!`);
+      // Remove tanto da listagem visual quanto do estado bruto
+      setDados((dadosAtuais) => dadosAtuais.filter((dado) => dado.id !== id));
+      setTodosAportes((dadosAtuais) => dadosAtuais.filter((dado) => dado.id !== id));
+    } catch (error) {
+      mensagemErro(`Erro ao excluir o aporte`);
+      console.error(error);
+    }
   }
 
-  const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = React.useState([]);
-
   function nomeMetaFinanceira(lancamento) {
-    const metaFinanceira = dadosMetasFinanceiras.find((x) => x.id === lancamento.idMetaFinanceira);
+    const metaFinanceira = dadosMetasFinanceiras.find(
+      (x) => (x.id ?? x.idMetaFinanceira ?? x.idMeta) === lancamento.idMetaFinanceira
+    );
     return metaFinanceira ? metaFinanceira.nome : lancamento.idMetaFinanceira ?? '—';
   }
 
+  // 1. Carrega primeiro as Metas Financeiras do Usuário Logado
   useEffect(() => {
     axios.get(`${BASE_URL}/metasFinanceiras`).then((response) => {
-      setDadosMetasFinanceiras(response.data);
+      // Aqui o filtrarRegistrosDoUsuario funciona perfeitamente porque a Meta tem "idCliente"
+      setDadosMetasFinanceiras(filtrarRegistrosDoUsuario(response.data));
     });
   }, []);
 
-  React.useEffect(() => {
+  // 2. Carrega todos os aportes do banco
+  useEffect(() => {
     axios.get(baseURL).then((response) => {
-      setDados(filtrarRegistrosDoUsuario(response.data));
-
+      setTodosAportes(response.data);
     });
   }, []);
 
-  if (!dados) return null;
+  // 3. EFEITO CRUCIAL: Sempre que a lista de metas filtradas ou de aportes atualizar, faz o cruzamento
+  useEffect(() => {
+    if (dadosMetasFinanceiras.length >= 0 && todosAportes.length > 0) {
+      // Mapeia uma lista contendo apenas os IDs das metas que pertencem ao usuário logado
+      const idsMetasDoUsuario = dadosMetasFinanceiras.map(meta => meta.id ?? meta.idMetaFinanceira ?? meta.idMeta);
+
+      // Filtra os aportes mantendo apenas aqueles cujo "idMetaFinanceira" pertence à lista acima
+      const aportesFiltrados = todosAportes.filter(aporte =>
+        idsMetasDoUsuario.includes(aporte.idMetaFinanceira)
+      );
+
+      setDados(aportesFiltrados);
+    } else if (todosAportes.length === 0) {
+      setDados([]);
+    }
+  }, [dadosMetasFinanceiras, todosAportes]);
+
+  if (dados === null) {
+    return (
+      <div className="container mt-5 text-center">
+        <p>Carregando aportes...</p>
+      </div>
+    );
+  }
 
   return (
     <div className='container'>
@@ -83,62 +120,60 @@ function ListagemAportes() {
           <div className='col-lg-12'>
             <div className='bs-component'>
               <Stack spacing={1} direction='row' marginBottom={2}>
-                <button
-                  type='button'
-                  className='btn btn-primary'
-                  onClick={() => cadastrar()}
-                >
+                <button type='button' className='btn btn-primary' onClick={cadastrar}>
                   Novo Aporte
                 </button>
-                <button
-                  onClick={() => navigate(-1)}
-                  type='button'
-                  className='btn btn-danger'
-                >
+                <button onClick={() => navigate(-1)} type='button' className='btn btn-danger'>
                   Cancelar
                 </button>
               </Stack>
+
               <table className='table table-hover'>
                 <thead>
                   <tr>
                     <th scope='col'>Meta Financeira</th>
                     <th scope='col'>Valor</th>
                     <th scope='col'>Data</th>
-                    <th scope='col' colSpan={2}>Ações</th>
+                    <th scope='col' style={{ width: '100px' }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {dados.map((dado) => (
-                    <tr key={dado.id}>
-                      <td>{nomeMetaFinanceira(dado)}</td>
-                      <td>
-                        {typeof dado.valor === 'number'
-                          ? dado.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                          : dado.valor
-                            ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                            : '—'}
-                      </td>
-                      <td>{dado.data}</td>
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(dado.id)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label='delete'
-                            onClick={(event) => window.confirm("Você realmente deseja excluir?") ? excluir(dado.id) : event.preventDefault()}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
+                  {dados.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="text-center text-muted">
+                        Nenhum aporte encontrado para as suas metas.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    dados.map((dado) => (
+                      <tr key={dado.id}>
+                        <td>{nomeMetaFinanceira(dado)}</td>
+                        <td>
+                          {dado.valor
+                            ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                            : '—'}
+                        </td>
+                        <td>{formatarDataParaExibicao(dado.data ?? dado.dataAporte)}</td>
+                        <td>
+                          <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton aria-label='edit' onClick={() => editar(dado)}>
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label='delete'
+                              onClick={() =>
+                                window.confirm("Você realmente deseja excluir este aporte?") && excluir(dado.id)
+                              }
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
-              </table>{' '}
+              </table>
             </div>
           </div>
         </div>
