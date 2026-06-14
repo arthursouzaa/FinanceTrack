@@ -8,9 +8,7 @@ function Navbar(props) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Limpar localStorage
     window.localStorage.clear();
-    // Redirecionar para login
     navigate('/login');
   };
 
@@ -20,27 +18,35 @@ function Navbar(props) {
         <a href='/' className='navbar-brand'>
           <img src={logo} alt="FinanceTrack" style={{ maxWidth: '100px', height: '50%' }} />
         </a>
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        
+        <button 
+          className="navbar-toggler" 
+          type="button" 
+          data-bs-toggle="collapse" 
+          data-bs-target="#navbarResponsive" 
+          aria-controls="navbarResponsive" 
+          aria-expanded="false" 
+          aria-label="Toggle navigation"
+        >
           <span className='navbar-toggler-icon'></span>
         </button>
+
         <div className='collapse navbar-collapse' id='navbarResponsive'>
-          <ul className='navbar-nav'>
+          <ul className='navbar-nav me-auto'>
             <NavbarItem
               render='true'
-              href='/#'
-              label='Inicio'
+              href='/'
+              label='Início'
               icon='bi bi-house'
             />
-          </ul>
-          <ul className='navbar-nav'>
+            
             <NavbarItem
               render='true'
               href='/listagem-lancamentos'
               label='Lançamentos'
               icon='bi bi-wallet2'
             />
-          </ul>
-          <ul className='navbar-nav'>
+
             <NavbarDropdown
               render='true'
               href='#'
@@ -51,16 +57,14 @@ function Navbar(props) {
               link2label='Aportes'
               icon="bi bi-cash-coin"
             />
-          </ul>
-          <ul className='navbar-nav'>
+
             <NavbarItem
               render='true'
               href='/listagem-pagamentos'
               label='Pagamentos'
               icon='bi bi-credit-card'
             />
-          </ul>
-          <ul className='navbar-nav'>
+
             <NavbarDropdown
               render='true'
               href='#'
@@ -72,11 +76,21 @@ function Navbar(props) {
               icon='bi bi-bank'
             />
           </ul>
-          <ul className='navbar-nav ms-auto'>
+
+          {/* Menu Alinhado à Direita: Perfil e Logout */}
+          <ul className='navbar-nav ms-auto align-items-lg-center'>
+            {/* ADICIONADO: Link direto para a listagem/edição do perfil logado */}
+            <NavbarItem
+              render='true'
+              href='/listagem-perfil'
+              label='Meu Perfil'
+              icon='bi bi-person-circle'
+            />
+
             <li className='nav-item'>
               <button
                 onClick={handleLogout}
-                className='nav-link btn btn-link'
+                className='nav-link btn btn-link py-lg-0'
                 style={{ textDecoration: 'none', color: 'white' }}
               >
                 <i className='bi bi-box-arrow-right me-2'></i>

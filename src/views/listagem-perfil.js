@@ -9,21 +9,26 @@ import { mensagemSucesso, mensagemErro } from '../components/toastr';
 
 import '../custom.css';
 
-import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+import api from '../config/axios';
 import { obterIdUsuarioLogado, salvarUsuarioLogado } from '../utils/usuarioLogado';
-
 
 function ListagemPerfil() {
     const { idParam } = useParams();
     const navigate = useNavigate();
-    const baseURL = `${BASE_URL}/clientes`;
     const idUsuarioLogado = obterIdUsuarioLogado();
 
-    // Usar idParam se fornecido, senão usar ID do usuário logado
-    const idParaCarregar = idParam ?? idUsuarioLogado;
+    const obterIdValido = () => {
+        if (idParam && !isNaN(Number(idParam)) && idParam !== 'undefined') {
+            return Number(idParam);
+        }
+        if (idUsuarioLogado && !isNaN(Number(idUsuarioLogado)) && idUsuarioLogado !== 'undefined') {
+            return Number(idUsuarioLogado);
+        }
+        return null;
+    };
 
-    const [id, setId] = useState('');
+    const idParaCarregar = obterIdValido();
+
     const [nome, setNome] = useState('');
     const [telefone, setTelefone] = useState('');
     const [email, setEmail] = useState('');
@@ -32,7 +37,11 @@ function ListagemPerfil() {
     const [carregando, setCarregando] = useState(true);
 
     async function salvar() {
-        // 1. Validações iniciais
+        if (!nome || !email) {
+            mensagemErro('Os campos Nome e E-mail são obrigatórios.');
+            return;
+        }
+
         if (novaSenha && novaSenha !== confirmarSenha) {
             mensagemErro('As senhas não coincidem');
             return;
@@ -43,7 +52,6 @@ function ListagemPerfil() {
             return;
         }
 
-        // 2. Montagem do objeto de dados
         const data = {
             id: idParaCarregar,
             nome,
@@ -51,57 +59,67 @@ function ListagemPerfil() {
             email,
         };
 
-        // Só adiciona a senha ao objeto se o usuário realmente digitou uma nova
         if (novaSenha) {
             data.senha = novaSenha;
             data.senhaConfirmada = confirmarSenha;
         }
 
-        // 3. Requisição para a API
         try {
-            // Removido o document.write que quebrava a tela
-            console.log(`Enviando para: ${baseURL}/${idParaCarregar}`, data);
+            const response = await api.put(`/clientes/${idParaCarregar}`, data);
+            const dadosRenovados = response.data; // { id, email, token }
 
-            await axios.put(`${baseURL}/${idParaCarregar}`, data, {
-                headers: { 'Content-Type': 'application/json' },
+            localStorage.setItem('_usuario_token', dadosRenovados.token);
+
+            salvarUsuarioLogado({
+                id: idParaCarregar,
+                nome,
+                telefone,
+                email
             });
 
             mensagemSucesso('Perfil atualizado com sucesso!');
 
-            // Atualizar usuário na localStorage
-            salvarUsuarioLogado({ id: idParaCarregar, nome, telefone, email });
-
-            // Redirecionar o usuário
             navigate('/');
         } catch (error) {
-            mensagemErro('Erro ao atualizar perfil');
             console.error(error);
+            const mensagemDoServidor = error?.response?.data?.message || error?.response?.data;
+            mensagemErro(mensagemDoServidor || 'Erro ao atualizar perfil');
         }
     }
 
+    const aplicarMascaraTelefone = (valor) => {
+        if (!valor) return "";
+        let v = valor.replace(/\D/g, "");
+        if (v.length > 11) v = v.slice(0, 11);
+
+        if (v.length > 6) {
+            return `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+        } else if (v.length > 2) {
+            return `(${v.slice(0, 2)}) ${v.slice(2)}`;
+        } else if (v.length > 0) {
+            return `(${v}`;
+        }
+        return v;
+    };
+
     useEffect(() => {
         async function carregarDados() {
-            try {
-                if (!idParaCarregar) {
-                    mensagemErro('Nenhum usuário para carregar');
-                    setCarregando(false);
-                    return;
-                }
+            if (!idParaCarregar) {
+                mensagemErro('Nenhum usuário válido identificado para carregar.');
+                setCarregando(false);
+                return;
+            }
 
-                const response = await axios.get(`${baseURL}/${idParaCarregar}`);
+            setCarregando(true);
+            try {
+                const response = await api.get(`/clientes/${idParaCarregar}`);
                 const dados = response.data;
 
                 if (!dados) {
-                    mensagemErro('Usuário não encontrado');
-                    setCarregando(false);
+                    mensagemErro('Usuário não encontrado no banco de dados.');
                     return;
                 }
 
-                // Salvar na localStorage para manter autenticação
-                salvarUsuarioLogado(dados);
-
-                // Preencher formulário
-                setId(dados.id ?? '');
                 setNome(dados.nome ?? '');
                 setTelefone(dados.telefone ?? '');
                 setEmail(dados.email ?? '');
@@ -116,7 +134,6 @@ function ListagemPerfil() {
         }
 
         carregarDados();
-        // eslint-disable-next-line
     }, [idParaCarregar]);
 
     return (
@@ -126,12 +143,14 @@ function ListagemPerfil() {
                     <div className='col-lg-12'>
                         <div className='bs-component'>
                             {carregando ? (
-                                <p className='text-center'>Carregando dados...</p>
+                                <div className="text-center py-4">
+                                    <p>Carregando dados do perfil...</p>
+                                </div>
                             ) : (
                                 <>
                                     <p className='text-muted'>Aqui você encontra seus dados pessoais! Você pode editar suas informações 📝</p>
 
-                                    <FormGroup label='Nome:' htmlFor='inputNome'>
+                                    <FormGroup label='Nome: *' htmlFor='inputNome'>
                                         <input
                                             type='text'
                                             id='inputNome'
@@ -141,17 +160,7 @@ function ListagemPerfil() {
                                         />
                                     </FormGroup>
 
-                                    <FormGroup label='Telefone:' htmlFor='inputTelefone'>
-                                        <input
-                                            type='text'
-                                            id='inputTelefone'
-                                            value={telefone}
-                                            className='form-control'
-                                            onChange={(e) => setTelefone(e.target.value)}
-                                        />
-                                    </FormGroup>
-
-                                    <FormGroup label='E-mail:' htmlFor='inputEmail'>
+                                    <FormGroup label='E-mail: *' htmlFor='inputEmail'>
                                         <input
                                             type='email'
                                             id='inputEmail'
@@ -161,9 +170,20 @@ function ListagemPerfil() {
                                         />
                                     </FormGroup>
 
+                                    <FormGroup label='Telefone:' htmlFor='inputTelefone'>
+                                        <input
+                                            type='text'
+                                            id='inputTelefone'
+                                            value={telefone}
+                                            className='form-control'
+                                            placeholder='(11) 99999-8888'
+                                            onChange={(e) => setTelefone(aplicarMascaraTelefone(e.target.value))} // 📱 Máscara aqui
+                                        />
+                                    </FormGroup>
+
                                     <hr />
 
-                                    <p className='text-muted'>Aqui você pode alterar sua senha! Escolha uma senha segura🔒</p>
+                                    <p className='text-muted'>Aqui você pode alterar sua senha! Escolha uma senha segura 🔒</p>
 
                                     <FormGroup label='Nova senha:' htmlFor='inputNovaSenha'>
                                         <input
@@ -176,7 +196,7 @@ function ListagemPerfil() {
                                         />
                                     </FormGroup>
 
-                                    <FormGroup label='Confirmar senha:' htmlFor='inputConfirmarSenha'>
+                                    <FormGroup label='Confirmar senha: ' htmlFor='inputConfirmarSenha'>
                                         <input
                                             type='password'
                                             id='inputConfirmarSenha'
@@ -187,7 +207,7 @@ function ListagemPerfil() {
                                         />
                                     </FormGroup>
 
-                                    <Stack spacing={1} padding={1} direction='row'>
+                                    <Stack spacing={1} paddingY={2} direction='row'>
                                         <button
                                             onClick={salvar}
                                             type='button'

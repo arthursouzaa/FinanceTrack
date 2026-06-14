@@ -1,102 +1,95 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import Card from '../components/card';
-
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
-
 import '../custom.css';
-
-import { useNavigate } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
 import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
-import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+// ALTERADO: Uso da instância configurada com interceptor de autenticação
+import api from '../config/axios';
 import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
-
-const baseReceitas = `${BASE_URL}/categoriasReceita`;
-const baseDespesas = `${BASE_URL}/categoriasDespesa`;
 
 function ListagemCategorias() {
   const navigate = useNavigate();
+
+  const [dadosReceitas, setDadosReceitas] = useState([]);
+  const [dadosDespesas, setDadosDespesas] = useState([]);
+  const [filtroTipo, setFiltroTipo] = useState('Todas');
+  const [carregando, setCarregando] = useState(true);
 
   const cadastrar = () => {
     navigate(`/cadastro-categorias`);
   };
 
   const editar = (id, tipo) => {
-    navigate(`/cadastro-categorias/${id}?tipo=${tipo}`)
+    navigate(`/cadastro-categorias/${id}?tipo=${tipo}`);
   };
 
-  const [dadosReceitas, setDadosReceitas] = React.useState(null);
-  const [dadosDespesas, setDadosDespesas] = React.useState(null);
-  const [filtroTipo, setFiltroTipo] = React.useState('Todas');
+  // Carregamento inicial robusto com tratamento correto de concorrência
+  useEffect(() => {
+    async function carregarCategorias() {
+      try {
+        const [receitasRes, despesasRes] = await Promise.all([
+          api.get('/categoriasReceita'),
+          api.get('/categoriasDespesa'),
+        ]);
 
-  async function excluir(id, tipo) {
-    if (tipo == 'Receita') {
-      let data = JSON.stringify({ id });
-      let url = `${baseReceitas}/${id}`;
-      console.log(url);
-      await axios
-        .delete(url, data, {
-          headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function (response) {
-          mensagemSucesso(`Categoria excluída com sucesso!`);
-          setDadosReceitas(
-            dadosReceitas.filter((dado) => {
-              return dado.id !== id;
-            })
-          );
-        })
-        .catch(function (error) {
-          mensagemErro(`Erro ao excluir a categoria`);
-        });
-    }
-    if (tipo == 'Despesa') {
-      let data = JSON.stringify({ id });
-      let url = `${baseDespesas}/${id}`;
-      console.log(url);
-      await axios
-        .delete(url, data, {
-          headers: { 'Content-Type': 'application/json' },
-        })
-        .then(function (response) {
-          mensagemSucesso(`Categoria excluída com sucesso!`);
-          setDadosDespesas(
-            dadosDespesas.filter((dado) => {
-              return dado.id !== id;
-            })
-          );
-        })
-        .catch(function (error) {
-          mensagemErro(`Erro ao excluir a categoria`);
-        });
+        // Filtra e injeta explicitamente o tipo do registro para identificação na tabela unificada
+        const receitasFiltradas = filtrarRegistrosDoUsuario(receitasRes.data).map(r => ({ ...r, tipo: 'Receita' }));
+        const despesasFiltradas = filtrarRegistrosDoUsuario(despesasRes.data).map(d => ({ ...d, tipo: 'Despesa' }));
+
+        setDadosReceitas(receitasFiltradas);
+        setDadosDespesas(despesasFiltradas);
+      } catch (error) {
+        console.error('Erro ao buscar categorias:', error);
+        mensagemErro('Erro ao carregar a listagem de categorias.');
+      } finally {
+        setCarregando(false);
+      }
     }
 
-  }
-
-  React.useEffect(() => {
-    axios.get(baseReceitas).then((response) => {
-      setDadosReceitas(filtrarRegistrosDoUsuario(response.data));
-    });
-    axios.get(baseDespesas).then((response) => {
-      setDadosDespesas(filtrarRegistrosDoUsuario(response.data));
-    });
+    carregarCategorias();
   }, []);
 
-  if (!dadosReceitas) return null;
-  if (!dadosDespesas) return null;
+  async function excluir(id, tipo) {
+    try {
+      const rota = tipo === 'Receita' ? `/categoriasReceita/${id}` : `/categoriasDespesa/${id}`;
+      
+      await api.delete(rota);
+      mensagemSucesso('Categoria excluída com sucesso!');
+
+      // Atualiza o respectivo estado local de forma reativa
+      if (tipo === 'Receita') {
+        setDadosReceitas(prev => prev.filter(item => item.id !== id));
+      } else {
+        setDadosDespesas(prev => prev.filter(item => item.id !== id));
+      }
+    } catch (error) {
+      console.error('Erro ao deletar categoria:', error);
+      mensagemErro('Erro ao excluir a categoria.');
+    }
+  }
 
   function obterLancamentosFiltrados() {
     if (filtroTipo === 'Receita') return dadosReceitas;
     if (filtroTipo === 'Despesa') return dadosDespesas;
-
     return [...dadosReceitas, ...dadosDespesas];
   }
+
+  if (carregando) {
+    return (
+      <div className="container text-center mt-5">
+        <p>Carregando categorias...</p>
+      </div>
+    );
+  }
+
+  const listaFiltrada = obterLancamentosFiltrados();
 
   return (
     <div className='container'>
@@ -111,7 +104,7 @@ function ListagemCategorias() {
                 <button
                   type='button'
                   className='btn btn-primary'
-                  onClick={() => cadastrar()}
+                  onClick={cadastrar}
                 >
                   Nova Categoria
                 </button>
@@ -120,11 +113,11 @@ function ListagemCategorias() {
                   type='button'
                   className='btn btn-danger'
                 >
-                  Cancelar
+                  Voltar
                 </button>
               </Stack>
 
-              <Stack spacing={2} direction="row" alignItems="center" marginTop={2}>
+              <Stack spacing={2} direction="row" alignItems="center" marginTop={2} marginBottom={3}>
                 <label><strong>Filtrar por tipo:</strong></label>
                 <select
                   className="form-select"
@@ -145,55 +138,70 @@ function ListagemCategorias() {
                     <th scope='col'>Nome</th>
                     <th scope='col'>Limite de Gasto</th>
                     <th scope='col'>Valor do Limite</th>
-                    <th scope='col' colSpan={2}>Ações</th>
+                    <th scope='col'>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {obterLancamentosFiltrados().map((dado) => (
-                    <tr key={`${dado.tipo}-${dado.id}`}>
-                      <td>{dado.tipo}</td>
-                      <td>{dado.nome}</td>
-
-                      <td>
-                        {dado.tipo === 'Despesa'
-                          ? dado.limiteGasto ? 'Sim' : 'Não'
-                          : '—'}
-                      </td>
-
-                      <td>
-                        {dado.tipo === 'Despesa' && dado.limiteGasto
-                          ? Number(dado.valorLimite).toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          })
-                          : '—'}
-                      </td>
-
-                      <td>
-                        <Stack spacing={1} padding={0} direction='row'>
-                          <IconButton
-                            aria-label='edit'
-                            onClick={() => editar(dado.id, dado.tipo)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-
-                          <IconButton
-                            aria-label='delete'
-                            onClick={(event) =>
-                              window.confirm('Você realmente deseja excluir?')
-                                ? excluir(dado.id, dado.tipo)
-                                : event.preventDefault()
-                            }
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Stack>
+                  {listaFiltrada.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center text-muted">
+                        Nenhuma categoria cadastrada ou encontrada para este filtro.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    listaFiltrada.map((dado) => (
+                      <tr key={`${dado.tipo}-${dado.id}`}>
+                        <td>
+                          <span className={`badge ${dado.tipo === 'Receita' ? 'bg-info' : 'bg-secondary'}`}>
+                            {dado.tipo}
+                          </span>
+                        </td>
+                        <td>{dado.nome}</td>
+
+                        <td>
+                          {dado.tipo === 'Despesa'
+                            ? dado.limiteGasto ? 'Sim' : 'Não'
+                            : '—'}
+                        </td>
+
+                        <td>
+                          {dado.tipo === 'Despesa' && dado.limiteGasto && dado.valorLimite
+                            ? Number(dado.valorLimite).toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })
+                            : '—'}
+                        </td>
+
+                        <td>
+                          <Stack spacing={1} padding={0} direction='row'>
+                            <IconButton
+                              aria-label='edit'
+                              onClick={() => editar(dado.id, dado.tipo)}
+                              size="small"
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+
+                            <IconButton
+                              aria-label='delete'
+                              onClick={(event) =>
+                                window.confirm('Você realmente deseja excluir esta categoria?')
+                                  ? excluir(dado.id, dado.tipo)
+                                  : event.preventDefault()
+                              }
+                              size="small"
+                              color="error"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
-              </table>{' '}
+              </table>
             </div>
           </div>
         </div>

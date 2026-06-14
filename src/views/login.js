@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BASE_URL } from '../config/axios';
@@ -10,43 +10,44 @@ import '../custom.css';
 
 function Login() {
   const navigate = useNavigate();
-  const [clientes, setClientes] = useState([]);
-  const [clienteSelecionado, setClienteSelecionado] = useState('');
-  const [carregando, setCarregando] = useState(true);
-
-  useEffect(() => {
-    // Carregar lista de clientes
-    axios
-      .get(`${BASE_URL}/clientes`)
-      .then((response) => {
-        if (Array.isArray(response.data)) {
-          setClientes(response.data);
-        }
-        setCarregando(false);
-      })
-      .catch((error) => {
-        mensagemErro('Erro ao carregar clientes');
-        setCarregando(false);
-      });
-  }, []);
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
   const handleLogin = () => {
-    if (!clienteSelecionado) {
-      mensagemErro('Selecione um cliente para entrar');
+    if (!email || !senha) {
+      mensagemErro('Por favor, preencha o e-mail e a senha.');
       return;
     }
 
-    // Encontrar o cliente selecionado
-    const cliente = clientes.find((c) => String(c.id) === String(clienteSelecionado));
+    setCarregando(true);
 
-    if (cliente) {
-      // Salvar na localStorage
-      salvarUsuarioLogado(cliente);
-      mensagemSucesso(`Bem-vindo, ${cliente.nome}!`);
-      navigate('/');
-    } else {
-      mensagemErro('Cliente não encontrado');
-    }
+    axios
+      .post(`${BASE_URL}/clientes/login`, { email, senha })
+      .then((response) => {
+
+        const dadosAutenticacao = response.data;
+
+        if (dadosAutenticacao.token) {
+          localStorage.setItem('_financetrack_token', dadosAutenticacao.token);
+          salvarUsuarioLogado(dadosAutenticacao);
+          mensagemSucesso(`Bem-vindo, ${dadosAutenticacao.nome || 'Usuário'}!`);
+          navigate('/');
+        } else {
+          mensagemErro('Erro inesperado na resposta do servidor.');
+        }
+      })
+      .catch((error) => {
+        console.error('Erro ao fazer login:', error);
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          mensagemErro('E-mail ou senha incorretos.');
+        } else {
+          mensagemErro('Erro ao tentar se conectar ao servidor.');
+        }
+      })
+      .finally(() => {
+        setCarregando(false);
+      });
   };
 
   const handleKeyPress = (e) => {
@@ -60,26 +61,34 @@ function Login() {
       <div className="row justify-content-center">
         <div className="col-lg-5">
           <Card title="Acesso ao FinanceTrack">
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <FormGroup
-                label="Selecione um Cliente:"
-                htmlFor="clienteSelecionado"
-              >
-                <select
-                  id="clienteSelecionado"
+
+            <div className="form-group" style={{ marginBottom: '15px' }}>
+              <FormGroup label="E-mail:" htmlFor="email">
+                <input
+                  type="email"
+                  id="email"
                   className="form-control"
-                  value={clienteSelecionado}
-                  onChange={(e) => setClienteSelecionado(e.target.value)}
+                  placeholder="Digite seu e-mail"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   onKeyPress={handleKeyPress}
                   disabled={carregando}
-                >
-                  <option value="">-- Selecione um cliente --</option>
-                  {clientes.map((cliente) => (
-                    <option key={cliente.id} value={cliente.id}>
-                      {cliente.nome} (ID: {cliente.id})
-                    </option>
-                  ))}
-                </select>
+                />
+              </FormGroup>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <FormGroup label="Senha:" htmlFor="senha">
+                <input
+                  type="password"
+                  id="senha"
+                  className="form-control"
+                  placeholder="Digite sua senha"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={carregando}
+                />
               </FormGroup>
             </div>
 
@@ -89,10 +98,13 @@ function Login() {
                 className="btn btn-success flex-grow-1"
                 disabled={carregando}
               >
-                {carregando ? 'Carregando...' : 'Entrar'}
+                {carregando ? 'Autenticando...' : 'Entrar'}
               </button>
               <button
-                onClick={() => setClienteSelecionado('')}
+                onClick={() => {
+                  setEmail('');
+                  setSenha('');
+                }}
                 className="btn btn-secondary"
                 disabled={carregando}
               >
@@ -100,9 +112,6 @@ function Login() {
               </button>
             </div>
 
-            {carregando && (
-              <p className="text-center mt-3">Carregando clientes...</p>
-            )}
           </Card>
         </div>
       </div>

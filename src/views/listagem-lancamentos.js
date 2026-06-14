@@ -9,24 +9,18 @@ import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
-import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+import api from '../config/axios'; 
 import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
-
-const baseReceitas = `${BASE_URL}/receitas`;
-const baseDespesas = `${BASE_URL}/despesas`;
-const baseCategoriasR = `${BASE_URL}/categoriasReceita`;
-const baseCategoriasD = `${BASE_URL}/categoriasDespesa`;
-const baseFormasPagamento = `${BASE_URL}/formasPagamento`;
 
 function ListagemLancamentos() {
   const navigate = useNavigate();
 
-  const [dadosReceitas, setDadosReceitas] = useState(null);
-  const [dadosDespesas, setDadosDespesas] = useState(null);
+  const [dadosReceitas, setDadosReceitas] = useState([]);
+  const [dadosDespesas, setDadosDespesas] = useState([]);
   const [dadosCategoriasReceita, setDadosCategoriasReceita] = useState([]);
   const [dadosCategoriasDespesa, setDadosCategoriasDespesa] = useState([]);
   const [dadosFormasPagamento, setDadosFormasPagamento] = useState([]);
+  const [carregando, setCarregando] = useState(true);
   
   const [filtroTipo, setFiltroTipo] = useState('Todos');
   const [filtroMes, setFiltroMes] = useState('Todos');
@@ -40,7 +34,6 @@ function ListagemLancamentos() {
     navigate(`/cadastro-lancamentos/${id}?tipo=${tipo}`);
   };
 
-  // Função robusta de data para exibição na tabela
   const formatarDataParaExibicao = (dataIso) => {
     if (!dataIso) return '—';
     try {
@@ -56,19 +49,14 @@ function ListagemLancamentos() {
   };
 
   async function excluir(id, tipo) {
-    const url = tipo === 'Receita' ? `${baseReceitas}/${id}` : `${baseDespesas}/${id}`;
-    
     try {
-      // Correção estrutural do delete no Axios
-      await axios.delete(url, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      mensagemSucesso(`${tipo} excluída com sucesso!`);
-      
       if (tipo === 'Receita') {
+        await api.delete(`/receitas/${id}`);
+        mensagemSucesso(`Receita excluída com sucesso!`);
         setDadosReceitas((atuais) => atuais.filter((dado) => dado.id !== id));
       } else {
+        await api.delete(`/despesas/${id}`);
+        mensagemSucesso(`Despesa excluída com sucesso!`);
         setDadosDespesas((atuais) => atuais.filter((dado) => dado.id !== id));
       }
     } catch (error) {
@@ -80,47 +68,46 @@ function ListagemLancamentos() {
   function nomeCategoria(lancamento) {
     if (lancamento.tipo === 'Receita') {
       const categoria = dadosCategoriasReceita.find((x) => x.id === lancamento.idCategoriaReceita);
-      return categoria ? categoria.nome : lancamento.idCategoriaReceita ?? '—';
+      return categoria ? categoria.nome : '—';
     }
     const categoria = dadosCategoriasDespesa.find((x) => x.id === lancamento.idCategoriaDespesa);
-    return categoria ? categoria.nome : lancamento.idCategoriaDespesa ?? '—';
+    return categoria ? categoria.nome : '—';
   }
 
   function nomeFormaPagamento(lancamento) {
     const formaPagamento = dadosFormasPagamento.find((x) => x.id === lancamento.idFormaPagamento);
-    return formaPagamento ? formaPagamento.nome : lancamento.idFormaPagamento ?? '—';
+    return formaPagamento ? formaPagamento.nome : '—';
   }
 
   useEffect(() => {
-    axios.get(baseReceitas).then((response) => {
-      setDadosReceitas(filtrarRegistrosDoUsuario(response.data).map(r => ({ ...r, tipo: 'Receita' })));
-    });
-    axios.get(baseDespesas).then((response) => {
-      setDadosDespesas(filtrarRegistrosDoUsuario(response.data).map(d => ({ ...d, tipo: 'Despesa' })));
-    });
-    axios.get(baseCategoriasR).then((response) => {
-      setDadosCategoriasReceita(filtrarRegistrosDoUsuario(response.data));
-    });
-    axios.get(baseCategoriasD).then((response) => {
-      setDadosCategoriasDespesa(filtrarRegistrosDoUsuario(response.data));
-    });
-    axios.get(baseFormasPagamento).then((response) => {
-      setDadosFormasPagamento(filtrarRegistrosDoUsuario(response.data));
-    });
-  }, []);
+    async function carregarDadosLancamentos() {
+      try {
+        const [receitasRes, despesasRes, catReceitasRes, catDespesasRes, formasPagtoRes] = await Promise.all([
+          api.get('/receitas'),
+          api.get('/despesas'),
+          api.get('/categoriasReceita'),
+          api.get('/categoriasDespesa'),
+          api.get('/formasPagamento')
+        ]);
 
-  // Garante que o app não trave enquanto carrega os dados principais
-  if (dadosReceitas === null || dadosDespesas === null) {
-    return (
-      <div className="container mt-5 text-center">
-        <p>Carregando lançamentos...</p>
-      </div>
-    );
-  }
+        setDadosReceitas(filtrarRegistrosDoUsuario(receitasRes.data).map(r => ({ ...r, tipo: 'Receita' })));
+        setDadosDespesas(filtrarRegistrosDoUsuario(despesasRes.data).map(d => ({ ...d, tipo: 'Despesa' })));
+        setDadosCategoriasReceita(filtrarRegistrosDoUsuario(catReceitasRes.data));
+        setDadosCategoriasDespesa(filtrarRegistrosDoUsuario(catDespesasRes.data));
+        setDadosFormasPagamento(filtrarRegistrosDoUsuario(formasPagtoRes.data));
+      } catch (error) {
+        console.error('Erro ao buscar dados de lançamentos:', error);
+        mensagemErro('Erro ao carregar a listagem de lançamentos.');
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarDadosLancamentos();
+  }, []);
 
   function obterLancamentosFiltrados() {
     let lista = [];
-
     if (filtroTipo === 'Receita') lista = dadosReceitas;
     else if (filtroTipo === 'Despesa') lista = dadosDespesas;
     else lista = [...dadosReceitas, ...dadosDespesas];
@@ -128,7 +115,6 @@ function ListagemLancamentos() {
     return lista.filter((lancamento) => {
       if (!lancamento.data) return true;
 
-      // Extrações baseadas em UTC para evitar dessincronização de fuso horário
       const dataObj = new Date(lancamento.data);
       const mes = dataObj.getUTCMonth() + 1;
       const ano = dataObj.getUTCFullYear();
@@ -158,6 +144,14 @@ function ListagemLancamentos() {
       style: 'currency',
       currency: 'BRL',
     });
+  }
+
+  if (carregando) {
+    return (
+      <div className="container mt-5 text-center">
+        <p>Carregando lançamentos...</p>
+      </div>
+    );
   }
 
   const lancamentosFiltrados = obterLancamentosFiltrados();
@@ -247,18 +241,10 @@ function ListagemLancamentos() {
               </Stack>
 
               <Stack spacing={1} direction='row' marginBottom={3}>
-                <button
-                  type='button'
-                  className='btn btn-primary'
-                  onClick={cadastrar}
-                >
+                <button type='button' className='btn btn-primary' onClick={cadastrar}>
                   Novo Lançamento
                 </button>
-                <button
-                  onClick={() => navigate(-1)}
-                  type='button'
-                  className='btn btn-danger'
-                >
+                <button onClick={() => navigate(-1)} type='button' className='btn btn-danger'>
                   Cancelar
                 </button>
               </Stack>
@@ -305,10 +291,7 @@ function ListagemLancamentos() {
                         <td>{dado.parcelada ? `${dado.quantidadeParcelas}x` : 'Não'}</td>
                         <td>
                           <Stack spacing={1} padding={0} direction="row">
-                            <IconButton
-                              aria-label="edit"
-                              onClick={() => editar(dado.id, dado.tipo)}
-                            >
+                            <IconButton aria-label="edit" onClick={() => editar(dado.id, dado.tipo)}>
                               <EditIcon />
                             </IconButton>
                             <IconButton

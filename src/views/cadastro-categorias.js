@@ -9,12 +9,8 @@ import { mensagemSucesso, mensagemErro } from '../components/toastr';
 
 import '../custom.css';
 
-import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+import api from '../config/axios';
 import { obterUsuarioLogado } from '../utils/usuarioLogado';
-
-const baseReceitas = `${BASE_URL}/categoriasReceita`;
-const baseDespesas = `${BASE_URL}/categoriasDespesa`;
 
 function CadastroCategoria() {
   const { idParam } = useParams();
@@ -24,11 +20,11 @@ function CadastroCategoria() {
   const tipoQuery = new URLSearchParams(location.search).get('tipo');
 
   const [id, setId] = useState('');
-  // CORREÇÃO 1: Inicializa o tipo com o que veio da URL (tipoQuery) se existir, senão assume 'Receita'
   const [tipo, setTipo] = useState(tipoQuery || 'Receita');
   const [nome, setNome] = useState('');
   const [limiteGasto, setLimiteGasto] = useState(false);
   const [valorLimite, setValorLimite] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
   const [dadosOriginais, setDadosOriginais] = useState(null);
 
@@ -52,6 +48,16 @@ function CadastroCategoria() {
   }
 
   async function salvar() {
+    if (!nome || nome.trim() === '') {
+      mensagemErro('Por favor, preencha o campo obrigatório: Nome (*)');
+      return;
+    }
+
+    if (tipo === 'Despesa' && limiteGasto && (!valorLimite || Number(valorLimite) <= 0)) {
+      mensagemErro('Por favor, preencha um valor limite maior que zero (*)');
+      return;
+    }
+
     const usuarioLogado = obterUsuarioLogado();
     const idUsuarioAtual = usuarioLogado?.id ? Number(usuarioLogado.id) : null;
 
@@ -61,26 +67,24 @@ function CadastroCategoria() {
     }
 
     const data = {
-      id: idParam ? Number(idParam) : null, 
+      id: idParam && !isNaN(Number(idParam)) ? Number(idParam) : null, 
       tipo,
-      nome,
-      limiteGasto,
-      valorLimite: limiteGasto && valorLimite ? Number(valorLimite) : null,
+      nome: nome.trim(),
+      limiteGasto: tipo === 'Despesa' ? limiteGasto : false,
+      valorLimite: tipo === 'Despesa' && limiteGasto && valorLimite ? Number(valorLimite) : null,
       idCliente: idUsuarioAtual,  
       idUsuario: idUsuarioAtual   
     };
 
+    const endpoint = tipo === 'Receita' ? '/categoriasReceita' : '/categoriasDespesa';
+    const idValido = idParam && !isNaN(Number(idParam)) && idParam !== 'undefined';
+
     try {
-      if (!idParam) {
-        tipo === 'Receita'
-          ? await axios.post(baseReceitas, data)
-          : await axios.post(baseDespesas, data);
+      if (!idValido) {
+        await api.post(endpoint, data);
         mensagemSucesso('Categoria cadastrada com sucesso!');
       } else {
-        // CORREÇÃO 2: Envia estritamente para o endpoint correto baseado no estado atualizado
-        tipo === 'Receita'
-          ? await axios.put(`${baseReceitas}/${idParam}`, data)
-          : await axios.put(`${baseDespesas}/${idParam}`, data);
+        await api.put(`${endpoint}/${idParam}`, data);
         mensagemSucesso('Categoria alterada com sucesso!');
       }
       navigate('/listagem-categorias');
@@ -91,85 +95,95 @@ function CadastroCategoria() {
     }
   }
 
-  async function buscar() {
-    if (!idParam) return;
-
-    try {
-      let dataObtida;
-
-      if (tipoQuery === 'Despesa') {
-        const resp = await axios.get(`${baseDespesas}/${idParam}`);
-        dataObtida = { ...resp.data, tipo: 'Despesa' };
-      } else {
-        const resp = await axios.get(`${baseReceitas}/${idParam}`);
-        dataObtida = { ...resp.data, tipo: 'Receita' };
-      }
-
-      setDadosOriginais(dataObtida);
-      setId(dataObtida.id ?? '');
-      // CORREÇÃO 3: Garante que o estado do componente mude para 'Despesa' ou 'Receita' conforme o banco
-      setTipo(dataObtida.tipo); 
-      setNome(dataObtida.nome ?? '');
-      setLimiteGasto(dataObtida.limiteGasto ?? false);
-      setValorLimite(dataObtida.valorLimite ?? '');
-    } catch (error) {
-      console.error(error);
-      mensagemErro('Erro ao buscar categoria');
-    }
-  }
-
   useEffect(() => {
+    async function buscar() {
+      const idValido = idParam && !isNaN(Number(idParam)) && idParam !== 'undefined';
+      if (!idValido) return;
+
+      setCarregando(true);
+      try {
+        let dataObtida;
+
+        if (tipoQuery === 'Despesa') {
+          const resp = await api.get(`/categoriasDespesa/${idParam}`);
+          dataObtida = { ...resp.data, tipo: 'Despesa' };
+        } else {
+          const resp = await api.get(`/categoriasReceita/${idParam}`);
+          dataObtida = { ...resp.data, tipo: 'Receita' };
+        }
+
+        setDadosOriginais(dataObtida);
+        setId(dataObtida.id ?? '');
+        setTipo(dataObtida.tipo); 
+        setNome(dataObtida.nome ?? '');
+        setLimiteGasto(dataObtida.limiteGasto ?? false);
+        setValorLimite(dataObtida.valorLimite ?? '');
+      } catch (error) {
+        console.error(error);
+        mensagemErro('Erro ao buscar categoria');
+      } finally {
+        setCarregando(false);
+      }
+    }
+
     buscar();
     // eslint-disable-next-line
   }, [idParam, tipoQuery]);
 
-  // CORREÇÃO 4: Removemos aquele useEffect antigo que monitorava [tipo] e limpava 
-  // os campos de despesa involuntariamente durante a renderização inicial da edição!
+  if (carregando) {
+    return (
+      <div className="container mt-5 text-center">
+        <p>Carregando dados do formulário...</p>
+      </div>
+    );
+  }
 
   return (
     <div className='container'>
-      <Card title='Cadastro de Categoria' icon='bi bi-tags'>
+      <Card title={idParam && !isNaN(Number(idParam)) ? 'Editar Categoria' : 'Cadastro de Categoria'} icon='bi bi-tags'>
         <div className='bs-component'>
-          <Stack spacing={1} direction='row'>
+          <Stack spacing={1} direction='row' className="mb-3">
             <FormGroup label='Tipo:&nbsp;' display='inline'>
-              <label>
+              <label className="me-3">
                 <input
                   type='radio'
                   name='tipo'
                   value='Receita'
                   checked={tipo === 'Receita'}
+                  disabled={!!idParam}
                   onChange={(e) => {
                     setTipo(e.target.value);
                     setLimiteGasto(false);
                     setValorLimite('');
                   }}
                 />
-                Receita
+                &nbsp;Receita
               </label>
-              &nbsp;&nbsp;
               <label>
                 <input
                   type='radio'
                   name='tipo'
                   value='Despesa'
                   checked={tipo === 'Despesa'}
+                  disabled={!!idParam} 
                   onChange={(e) => setTipo(e.target.value)}
                 />
-                Despesa
+                &nbsp;Despesa
               </label>
             </FormGroup>
           </Stack>
 
-          <FormGroup label='Nome:'>
+          <FormGroup label='Nome: *'>
             <input
               className='form-control'
               value={nome}
+              placeholder="Ex: Alimentação, Salário..."
               onChange={(e) => setNome(e.target.value)}
             />
           </FormGroup>
 
-          <Stack spacing={1} padding={0} direction='row' className='form-switch'>
-            <FormGroup label='Limite de Gasto:&nbsp;' htmlFor='inputLimiteGasto'>
+          <Stack spacing={1} padding={0} direction='row' className='form-switch my-3'>
+            <FormGroup label='Definir Limite de Gasto:&nbsp;' htmlFor='inputLimiteGasto'>
               <input
                 type='checkbox'
                 className='form-check-input'
@@ -190,11 +204,13 @@ function CadastroCategoria() {
             </FormGroup>
           </Stack>
 
-          <FormGroup label='Valor Limite: ' htmlFor='inputValorLimite'>
+          <FormGroup label={limiteGasto ? 'Valor Limite: *' : 'Valor Limite:'} htmlFor='inputValorLimite'>
             <input
               type='number'  
               id='inputValorLimite'
               value={valorLimite}
+              placeholder="0.00"
+              step="0.01"
               className='form-control'
               name='valorLimite'
               disabled={tipo !== 'Despesa' || !limiteGasto}
@@ -202,10 +218,10 @@ function CadastroCategoria() {
             />
           </FormGroup>
 
-          <Stack spacing={1} padding={1} direction='row'>
+          <Stack spacing={1} paddingY={2} direction='row' className="mt-3">
             <button className='btn btn-success' onClick={salvar}>Salvar</button>
             <button className='btn btn-warning' onClick={inicializar}>Restaurar</button>
-            <button className='btn btn-danger' onClick={() => navigate(-1)}>Cancelar</button>
+            <button className='btn btn-danger' onClick={() => navigate('/listagem-categorias')}>Cancelar</button>
           </Stack>
         </div>
       </Card>

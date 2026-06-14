@@ -28,7 +28,6 @@ import Navbar from './components/navbar';
 function RotasInternas() {
   const location = useLocation();
   
-  // Não mostrar navbar na página de login
   const mostrarNavbar = location.pathname !== '/login';
 
   return (

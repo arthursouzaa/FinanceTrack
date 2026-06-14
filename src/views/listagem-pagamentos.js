@@ -6,15 +6,10 @@ import Stack from '@mui/material/Stack';
 import Card from '../components/card';
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
 
-import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+import api from '../config/axios';
 import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
 
 import '../custom.css';
-
-const baseDespesas = `${BASE_URL}/despesas`;
-const baseCategoriasDespesa = `${BASE_URL}/categoriasDespesa`;
-const baseFormasPagamento = `${BASE_URL}/formasPagamento`;
 
 function ListagemPagamentos() {
   const navigate = useNavigate();
@@ -22,22 +17,33 @@ function ListagemPagamentos() {
   const [despesas, setDespesas] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [formasPagamento, setFormasPagamento] = useState([]);
-  const [filtroMes, setFiltroMes] = React.useState('Todos');
-  const [filtroAno, setFiltroAno] = React.useState('Todos');
-  const [filtroFormaPagamento, setFiltroFormaPagamento] = React.useState('Todas');
+  const [carregando, setCarregando] = useState(true);
+
+  const [filtroMes, setFiltroMes] = useState('Todos');
+  const [filtroAno, setFiltroAno] = useState('Todos');
+  const [filtroFormaPagamento, setFiltroFormaPagamento] = useState('Todas');
 
   useEffect(() => {
-    Promise.all([
-      axios.get(baseDespesas),
-      axios.get(baseCategoriasDespesa),
-      axios.get(baseFormasPagamento),
-    ])
-      .then(([despesasRes, categoriasRes, formasRes]) => {
+    async function carregarDadosPagamentos() {
+      try {
+        const [despesasRes, categoriasRes, formasRes] = await Promise.all([
+          api.get('/despesas'),
+          api.get('/categoriasDespesa'),
+          api.get('/formasPagamento'),
+        ]);
+
         setDespesas(filtrarRegistrosDoUsuario(despesasRes.data));
         setCategorias(filtrarRegistrosDoUsuario(categoriasRes.data));
         setFormasPagamento(filtrarRegistrosDoUsuario(formasRes.data));
-      })
-      .catch(() => mensagemErro('Erro ao carregar dados'));
+      } catch (error) {
+        console.error('Erro ao carregar dados de pagamentos:', error);
+        mensagemErro('Erro ao carregar dados de faturas.');
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarDadosPagamentos();
   }, []);
 
   const despesasParceladas = useMemo(
@@ -54,91 +60,86 @@ function ListagemPagamentos() {
   }
 
   async function pagarFatura() {
+    if (despesasParceladasFiltradas.length === 0) {
+      mensagemErro('Não há lançamentos pendentes para pagar no filtro atual.');
+      return;
+    }
+
     try {
       await Promise.all(
-        despesasParceladas.map((despesa) =>
-          axios.put(
-            `${baseDespesas}/${despesa.id}`,
-            { ...despesa, paga: true },
-            { headers: { 'Content-Type': 'application/json' } }
-          )
+        despesasParceladasFiltradas.map((despesa) =>
+          api.put(`/despesas/${despesa.id}`, { ...despesa, paga: true })
         )
       );
 
       setDespesas((prev) =>
         prev.map((d) =>
-          despesasParceladas.some((p) => p.id === d.id)
+          despesasParceladasFiltradas.some((p) => p.id === d.id)
             ? { ...d, paga: true }
             : d
         )
       );
 
       mensagemSucesso('Fatura paga com sucesso!');
-    } catch {
+    } catch (error) {
+      console.error('Erro ao processar pagamento da fatura:', error);
       mensagemErro('Erro ao pagar fatura');
     }
   }
-
-  if (!despesasParceladas.length) return null;
-
-  const despesasParceladasFiltradas = obterDadosFiltrados(despesasParceladas);
-  const totalFatura = somarValores(despesasParceladasFiltradas);
-  const formasParceladas = [...new Set(despesasParceladas.map(d => obterNomeFormaPagamento(d)).filter(n => n !== '—'))];
-  const formasPagamentoFiltradas = formasPagamento.filter(f => formasParceladas.includes(f.nome));
 
   function obterDadosFiltrados(dados) {
     return dados.filter((dado) => {
       if (!dado.data) return true;
 
       const formaPagamento = obterNomeFormaPagamento(dado);
-      const mes = extrairMes(dado.data);
-      const ano = extrairAno(dado.data);
+      
+      const dataObj = new Date(dado.data);
+      const mes = dataObj.getUTCMonth() + 1;
+      const ano = dataObj.getUTCFullYear();
 
       const filtraFormaPagamento =
         filtroFormaPagamento === 'Todas' || formaPagamento === filtroFormaPagamento;
 
-      const filtraMes =
-        filtroMes === 'Todos' || mes === Number(filtroMes);
-
-      const filtraAno =
-        filtroAno === 'Todos' || ano === Number(filtroAno);
+      const filtraMes = filtroMes === 'Todos' || mes === Number(filtroMes);
+      const filtraAno = filtroAno === 'Todos' || ano === Number(filtroAno);
 
       return filtraMes && filtraAno && filtraFormaPagamento;
     });
   }
 
-  function extrairMes(data) {
-    return new Date(data).getMonth() + 1; // 1 a 12
-  }
-
-  function extrairAno(data) {
-    return new Date(data).getFullYear();
-  }
-
   function obterAnosDisponiveis() {
-    const todasDatas = [
-      ...despesasParceladas
-    ]
-      .filter(l => l.data)
-      .map(l => new Date(l.data).getFullYear());
+    const todasDatas = [...despesasParceladas]
+      .filter((l) => l.data)
+      .map((l) => new Date(l.data).getUTCFullYear());
 
     const anosUnicos = [...new Set(todasDatas)];
-
     return anosUnicos.sort((a, b) => b - a);
   }
 
   function formatarMoeda(valor) {
     return valor.toLocaleString('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     });
   }
 
   function somarValores(lista) {
-    return lista.reduce((acc, item) => {
-      const valor = Number(item.valor) || 0;
-      return acc + valor;
-    }, 0);
+    return lista.reduce((acc, item) => acc + (Number(item.valor) || 0), 0);
+  }
+
+  const despesasParceladasFiltradas = obterDadosFiltrados(despesasParceladas);
+  const totalFatura = somarValores(despesasParceladasFiltradas);
+  const formasParceladas = [
+    ...new Set(despesasParceladas.map((d) => obterNomeFormaPagamento(d)).filter((n) => n !== '—')),
+  ];
+  const formasPagamentoFiltradas = formasPagamento.filter((f) => formasParceladas.includes(f.nome));
+
+  if (carregando) {
+    return (
+      <div className="container mt-5 text-center">
+        <p>Carregando faturas e pagamentos...</p>
+      </div>
+    );
   }
 
   return (
@@ -203,13 +204,12 @@ function ListagemPagamentos() {
           </select>
         </Stack>
 
-
         <div className='row mt-3 mb-3'>
-          <div className='col-md-2'>
+          <div className='col-md-3'>
             <div className="resumo-card">
-              <span className="resumo-titulo">Total da Fatura</span>
+              <span className="resumo-titulo">Total da Fatura (Filtrado)</span>
               <span className="resumo-valor" style={{ color: '#50bbfa' }}>
-                {totalFatura > 0 ? formatarMoeda(totalFatura) : '—'}
+                {totalFatura > 0 ? formatarMoeda(totalFatura) : 'R$ 0,00'}
               </span>
             </div>
           </div>
@@ -229,41 +229,49 @@ function ListagemPagamentos() {
             </tr>
           </thead>
           <tbody>
-            {despesasParceladasFiltradas.map((d) => (
-              <tr key={d.id}>
-                <td>{d.paga ? 'Pago' : 'Pendente'}</td>
-                <td>{d.nome}</td>
-                <td>{d.data ? new Date(d.data).toLocaleDateString('pt-BR') : '—'}</td>
-                <td>{obterNomeCategoria(d)}</td>
-                <td>{d.volume ? 'Fixa' : 'Única'}</td>
-                <td>
-                  {Number(d.valor).toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  })}
+            {despesasParceladasFiltradas.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="text-center text-muted">
+                  Nenhum registro de pagamento parcelado encontrado para os filtros selecionados.
                 </td>
-                <td>{obterNomeFormaPagamento(d)}</td>
-                <td>{d.quantidadeParcelas}</td>
               </tr>
-            ))}
+            ) : (
+              despesasParceladasFiltradas.map((d) => (
+                <tr key={d.id}>
+                  <td>
+                    <span className={`badge ${d.paga ? 'bg-success' : 'bg-warning text-dark'}`}>
+                      {d.paga ? 'Pago' : 'Pendente'}
+                    </span>
+                  </td>
+                  <td>{d.nome}</td>
+                  <td>
+                    {d.data
+                      ? new Date(d.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+                      : '—'}
+                  </td>
+                  <td>{obterNomeCategoria(d)}</td>
+                  <td>{d.volume ? 'Fixa' : 'Única'}</td>
+                  <td>{d.valor ? formatarMoeda(Number(d.valor)) : '—'}</td>
+                  <td>{obterNomeFormaPagamento(d)}</td>
+                  <td>{d.quantidadeParcelas ? `${d.quantidadeParcelas}x` : '—'}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
 
-        <Stack direction='row' spacing={1}>
+        <Stack direction='row' spacing={1} marginTop={3}>
           <button
             type='button'
             className='btn btn-success'
             onClick={pagarFatura}
+            disabled={despesasParceladasFiltradas.length === 0}
           >
-            Pagar Fatura
+            Pagar Fatura Filtrada
           </button>
 
-          <button
-            onClick={() => navigate(-1)}
-            type='button'
-            className='btn btn-danger'
-          >
-            Cancelar
+          <button onClick={() => navigate(-1)} type='button' className='btn btn-danger'>
+            Voltar
           </button>
         </Stack>
       </Card>

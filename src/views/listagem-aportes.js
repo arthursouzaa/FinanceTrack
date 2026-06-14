@@ -9,25 +9,22 @@ import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
-import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+import api from '../config/axios';
 import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
-
-const baseURL = `${BASE_URL}/aportes`;
 
 function ListagemAportes() {
   const navigate = useNavigate();
 
-  const [todosAportes, setTodosAportes] = useState([]); // Guarda o retorno bruto do servidor
-  const [dados, setDados] = useState([]); // Guarda apenas os aportes filtrados do usuário
+  const [dados, setDados] = useState([]);
   const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = useState([]);
+  const [carregando, setCarregando] = useState(true);
 
   const cadastrar = () => {
     navigate(`/cadastro-aportes`);
   };
 
   const editar = (aporte) => {
-    const idAporte = aporte.id ?? aporte.idAporte;
+    const idAporte = aporte.id;
     if (idAporte) {
       navigate(`/cadastro-aportes/${idAporte}`);
     } else {
@@ -49,16 +46,11 @@ function ListagemAportes() {
   };
 
   async function excluir(id) {
-    let url = `${baseURL}/${id}`;
     try {
-      await axios.delete(url, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      await api.delete(`/aportes/${id}`);
 
       mensagemSucesso(`Aporte excluído com sucesso!`);
-      // Remove tanto da listagem visual quanto do estado bruto
       setDados((dadosAtuais) => dadosAtuais.filter((dado) => dado.id !== id));
-      setTodosAportes((dadosAtuais) => dadosAtuais.filter((dado) => dado.id !== id));
     } catch (error) {
       mensagemErro(`Erro ao excluir o aporte`);
       console.error(error);
@@ -66,45 +58,40 @@ function ListagemAportes() {
   }
 
   function nomeMetaFinanceira(lancamento) {
-    const metaFinanceira = dadosMetasFinanceiras.find(
-      (x) => (x.id ?? x.idMetaFinanceira ?? x.idMeta) === lancamento.idMetaFinanceira
-    );
-    return metaFinanceira ? metaFinanceira.nome : lancamento.idMetaFinanceira ?? '—';
+    const metaFinanceira = dadosMetasFinanceiras.find((x) => x.id === lancamento.idMetaFinanceira);
+    return metaFinanceira ? metaFinanceira.nome : '—';
   }
 
-  // 1. Carrega primeiro as Metas Financeiras do Usuário Logado
   useEffect(() => {
-    axios.get(`${BASE_URL}/metasFinanceiras`).then((response) => {
-      // Aqui o filtrarRegistrosDoUsuario funciona perfeitamente porque a Meta tem "idCliente"
-      setDadosMetasFinanceiras(filtrarRegistrosDoUsuario(response.data));
-    });
-  }, []);
+    async function carregarDadosListagem() {
+      try {
+        const [metasRes, aportesRes] = await Promise.all([
+          api.get('/metasFinanceiras'),
+          api.get('/aportes')
+        ]);
 
-  // 2. Carrega todos os aportes do banco
-  useEffect(() => {
-    axios.get(baseURL).then((response) => {
-      setTodosAportes(response.data);
-    });
-  }, []);
+        const metasDoUsuario = filtrarRegistrosDoUsuario(metasRes.data);
+        setDadosMetasFinanceiras(metasDoUsuario);
 
-  // 3. EFEITO CRUCIAL: Sempre que a lista de metas filtradas ou de aportes atualizar, faz o cruzamento
-  useEffect(() => {
-    if (dadosMetasFinanceiras.length >= 0 && todosAportes.length > 0) {
-      // Mapeia uma lista contendo apenas os IDs das metas que pertencem ao usuário logado
-      const idsMetasDoUsuario = dadosMetasFinanceiras.map(meta => meta.id ?? meta.idMetaFinanceira ?? meta.idMeta);
+        const idsMetasDoUsuario = metasDoUsuario.map(meta => meta.id);
 
-      // Filtra os aportes mantendo apenas aqueles cujo "idMetaFinanceira" pertence à lista acima
-      const aportesFiltrados = todosAportes.filter(aporte =>
-        idsMetasDoUsuario.includes(aporte.idMetaFinanceira)
-      );
+        const aportesFiltrados = aportesRes.data.filter(aporte =>
+          idsMetasDoUsuario.includes(aporte.idMetaFinanceira)
+        );
 
-      setDados(aportesFiltrados);
-    } else if (todosAportes.length === 0) {
-      setDados([]);
+        setDados(aportesFiltrados);
+      } catch (error) {
+        console.error('Erro ao buscar dados de aportes:', error);
+        mensagemErro('Erro ao carregar a listagem de aportes.');
+      } finally {
+        setCarregando(false);
+      }
     }
-  }, [dadosMetasFinanceiras, todosAportes]);
 
-  if (dados === null) {
+    carregarDadosListagem();
+  }, []);
+
+  if (carregando) {
     return (
       <div className="container mt-5 text-center">
         <p>Carregando aportes...</p>
@@ -153,7 +140,7 @@ function ListagemAportes() {
                             ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                             : '—'}
                         </td>
-                        <td>{formatarDataParaExibicao(dado.data ?? dado.dataAporte)}</td>
+                        <td>{formatarDataParaExibicao(dado.data)}</td>
                         <td>
                           <Stack spacing={1} padding={0} direction='row'>
                             <IconButton aria-label='edit' onClick={() => editar(dado)}>

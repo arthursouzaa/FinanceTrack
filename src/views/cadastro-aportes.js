@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { obterIdUsuarioLogado } from '../utils/usuarioLogado';
 
 import Stack from '@mui/material/Stack';
 import Card from '../components/card';
@@ -8,33 +9,49 @@ import FormGroup from '../components/form-group';
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
 import '../custom.css';
 
-import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+import api from '../config/axios';
 import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
 
 function CadastroAporte() {
-    // Captura o ID da URL de forma segura
-    const idParam = window.location.pathname.split('/').pop() !== 'cadastro-aportes'
-        ? window.location.pathname.split('/').pop()
-        : undefined;
+    const { idParam } = useParams();
 
     const navigate = useNavigate();
-    const baseURL = `${BASE_URL}/aportes`;
 
     const [id, setId] = useState('');
     const [valor, setValor] = useState('');
     const [data, setData] = useState(new Date().toISOString().split('T')[0]);
     const [idMetaFinanceira, setIdMetaFinanceira] = useState('');
+    const [carregando, setCarregando] = useState(true);
 
     const [dadosOriginais, setDadosOriginais] = useState(null);
     const [dadosMetasFinanceiras, setDadosMetasFinanceiras] = useState([]);
 
-    // Helper para garantir que a data do backend caia perfeitamente no formato "YYYY-MM-DD" do input
-    const formatarParaInputData = (dataIso) => {
-        if (!dataIso) return '';
-        return dataIso.split('T')[0];
-    };
+    const formatarParaInputData = (dataBruta) => {
+        if (!dataBruta) return '';
 
+        if (typeof dataBruta === 'string') {
+            return dataBruta.split('T')[0];
+        }
+
+        if (Array.isArray(dataBruta)) {
+            const [ano, mes, dia] = dataBruta;
+            const mesFormatado = String(mes).padStart(2, '0');
+            const diaFormatado = String(dia).padStart(2, '0');
+            return `${ano}-${mesFormatado}-${diaFormatado}`;
+        }
+
+        try {
+            const d = new Date(dataBruta);
+            if (!isNaN(d.getTime())) {
+                return d.toISOString().split('T')[0];
+            }
+        } catch (e) {
+            console.error("Erro ao formatar data:", e);
+        }
+
+        return '';
+    };
+    
     function restaurarDados() {
         if (!dadosOriginais) {
             setId('');
@@ -46,12 +63,8 @@ function CadastroAporte() {
 
         setId(dadosOriginais.id ?? '');
         setValor(dadosOriginais.valor ?? '');
-        setData(formatarParaInputData(dadosOriginais.data ?? dadosOriginais.dataAporte));
-        setIdMetaFinanceira(
-            dadosOriginais.idMetaFinanceira
-                ? String(dadosOriginais.idMetaFinanceira)
-                : ''
-        );
+        setData(formatarParaInputData(dadosOriginais.dataEnvio));
+        setIdMetaFinanceira(dadosOriginais.idMetaFinanceira ? String(dadosOriginais.idMetaFinanceira) : '');
     }
 
     async function salvar() {
@@ -60,76 +73,83 @@ function CadastroAporte() {
             return;
         }
 
-        // Monta o payload como objeto nativo (o Axios transforma em string JSON automaticamente)
+        const idUsuarioLogado = obterIdUsuarioLogado();
+        if (!idUsuarioLogado) {
+            mensagemErro('Erro: Usuário não identificado. Faça login novamente.');
+            return;
+        }
+
         const payload = {
             valor: Number(valor),
-            data: data.includes('T') ? data : `${data}T00:00:00.000Z`, // Salva em ISO neutro
-            idMetaFinanceira: Number(idMetaFinanceira)
+            dataEnvio: data.includes('T') ? data : `${data}T00:00:00.000Z`,
+            idMetaFinanceira: Number(idMetaFinanceira),
+            idCliente: Number(idUsuarioLogado),
+            idUsuario: Number(idUsuarioLogado)
         };
 
-        // Se for edição, injeta o ID no corpo
-        if (idParam) {
+        const idValido = idParam && !isNaN(Number(idParam)) && idParam !== 'undefined';
+        if (idValido) {
             payload.id = Number(idParam);
         }
 
         try {
-            if (!idParam) {
-                await axios.post(baseURL, payload, {
-                    headers: { 'Content-Type': 'application/json' },
-                });
+            if (!idValido) {
+                await api.post('/aportes', payload);
                 mensagemSucesso('Aporte cadastrado com sucesso!');
             } else {
-                await axios.put(`${baseURL}/${idParam}`, payload, {
-                    headers: { 'Content-Type': 'application/json' },
-                });
+                await api.put(`/aportes/${idParam}`, payload);
                 mensagemSucesso('Aporte alterado com sucesso!');
             }
 
             navigate('/listagem-aportes');
         } catch (error) {
-            mensagemErro(error?.response?.data || 'Erro ao salvar aporte');
-        }
-    }
-
-    async function buscarAporte() {
-        if (!idParam || idParam === 'undefined') return;
-
-        try {
-            const response = await axios.get(`${baseURL}/${idParam}`);
-            const payload = response.data;
-
-            setDadosOriginais(payload);
-
-            setId(payload.id ?? '');
-            setValor(payload.valor ?? '');
-            setData(formatarParaInputData(payload.data ?? payload.dataAporte));
-            setIdMetaFinanceira(
-                payload.idMetaFinanceira ? String(payload.idMetaFinanceira) : ''
-            );
-        } catch (error) {
-            mensagemErro('Erro ao buscar aporte');
-        }
-    }
-
-    async function buscarMetasFinanceiras() {
-        try {
-            const response = await axios.get(`${BASE_URL}/metasFinanceiras`);
-            // CRUCIAL: Filtra para o select exibir APENAS as metas do usuário logado
-            setDadosMetasFinanceiras(filtrarRegistrosDoUsuario(response.data));
-        } catch (error) {
-            mensagemErro('Erro ao carregar metas financeiras');
+            console.error(error);
+            mensagemErro(error?.response?.data?.message || 'Erro ao salvar aporte');
         }
     }
 
     useEffect(() => {
-        buscarMetasFinanceiras();
-        buscarAporte();
+        async function inicializarComponente() {
+            setCarregando(true);
+            try {
+                const metasResponse = await api.get('/metasFinanceiras');
+                setDadosMetasFinanceiras(filtrarRegistrosDoUsuario(metasResponse.data || []));
+
+                const idValido = idParam && !isNaN(Number(idParam)) && idParam !== 'undefined';
+
+                if (idValido) {
+                    const aporteResponse = await api.get(`/aportes/${idParam}`);
+                    const payload = aporteResponse.data;
+
+                    setDadosOriginais(payload);
+                    setId(payload.id ?? '');
+                    setValor(payload.valor ?? '');
+                    setData(formatarParaInputData(payload.dataEnvio));
+                    setIdMetaFinanceira(payload.idMetaFinanceira ? String(payload.idMetaFinanceira) : '');
+                }
+            } catch (error) {
+                console.error('Erro na inicialização da tela de aportes:', error);
+                mensagemErro('Erro ao inicializar os dados da tela.');
+            } finally {
+                setCarregando(false);
+            }
+        }
+
+        inicializarComponente();
         // eslint-disable-next-line
     }, [idParam]);
 
+    if (carregando) {
+        return (
+            <div className="container mt-5 text-center">
+                <p>Carregando dados do formulário...</p>
+            </div>
+        );
+    }
+
     return (
         <div className='container'>
-            <Card title={idParam ? 'Editar Aporte' : 'Cadastro de Aporte'} icon="bi bi-cash">
+            <Card title={idParam && !isNaN(Number(idParam)) ? 'Editar Aporte' : 'Cadastro de Aporte'} icon="bi bi-cash">
                 <div className='row'>
                     <div className='col-lg-12'>
                         <div className='bs-component'>

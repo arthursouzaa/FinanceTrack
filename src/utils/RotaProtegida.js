@@ -1,13 +1,9 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { obterIdUsuarioLogado } from './usuarioLogado';
+import { obterUsuarioLogado } from './usuarioLogado';
 
 export function RotaProtegida({ element }) {
-  const idUsuarioLogado = obterIdUsuarioLogado();
+  const usuarioAutenticado = obterUsuarioLogado();
 
-  if (!idUsuarioLogado) {
-    return <Navigate to="/login" />;
-  }
-
-  return element;
+  return usuarioAutenticado ? element : <Navigate to="/login" replace />;
 }

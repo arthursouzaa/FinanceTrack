@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../components/card';
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
 import '../custom.css';
@@ -8,19 +8,16 @@ import Stack from '@mui/material/Stack';
 import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-
-import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+import api from '../config/axios';
 import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
-
-const baseURL = `${BASE_URL}/metasFinanceiras`;
 
 function ListagemMetas() {
   const navigate = useNavigate();
 
-  const [dados, setDados] = React.useState(null);
-  const [dadosAportes, setDadosAportes] = React.useState([]);
-  const [statusFiltro, setStatusFiltro] = React.useState('');
+  const [dados, setDados] = useState([]);
+  const [dadosAportes, setDadosAportes] = useState([]);
+  const [statusFiltro, setStatusFiltro] = useState('');
+  const [carregando, setCarregando] = useState(true);
 
   const cadastrar = () => {
     navigate(`/cadastro-metas`);
@@ -30,31 +27,23 @@ function ListagemMetas() {
     navigate(`/cadastro-metas/${id}`);
   };
 
-  // Função auxiliar para formatar a data ISO vinda do backend para o formato MM/AAAA
   const formatarDataParaMesAno = (dataIso) => {
     if (!dataIso) return '—';
     try {
       const data = new Date(dataIso);
-      // Evita problemas de fuso horário local subtraindo os minutos de diferença se necessário, 
-      // mas para pegar o mês/ano puro, o getUTC é mais seguro:
       const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
       const ano = data.getUTCFullYear();
       return `${mes}/${ano}`;
     } catch {
-      return dataIso; // Caso não consiga converter, retorna o texto original
+      return dataIso;
     }
   };
 
   async function excluir(id) {
-    let url = `${baseURL}/${id}`;
-    
     try {
-      await axios.delete(url, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      await api.delete(`/metasFinanceiras/${id}`);
 
       mensagemSucesso(`Meta excluída com sucesso!`);
-      
       setDados((dadosAtuais) => dadosAtuais.filter((dado) => dado.id !== id));
     } catch (error) {
       mensagemErro(`Erro ao excluir a meta`);
@@ -62,13 +51,25 @@ function ListagemMetas() {
     }
   }
 
-  React.useEffect(() => {
-    axios.get(baseURL).then((response) => {
-      setDados(filtrarRegistrosDoUsuario(response.data));
-    });
-    axios.get(`${BASE_URL}/aportes`).then((response) => {
-      setDadosAportes(filtrarRegistrosDoUsuario(response.data));
-    });
+  useEffect(() => {
+    async function carregarDadosMetas() {
+      try {
+        const [metasRes, aportesRes] = await Promise.all([
+          api.get('/metasFinanceiras'),
+          api.get('/aportes')
+        ]);
+
+        setDados(filtrarRegistrosDoUsuario(metasRes.data));
+        setDadosAportes(filtrarRegistrosDoUsuario(aportesRes.data));
+      } catch (error) {
+        console.error('Erro ao buscar dados de metas:', error);
+        mensagemErro('Erro ao carregar a listagem de metas.');
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarDadosMetas();
   }, []);
 
   function totalInvestido(meta) {
@@ -80,8 +81,8 @@ function ListagemMetas() {
     };
 
     const aportes = (dadosAportes || []).filter((a) => a.idMetaFinanceira === meta.id);
-    const totalAportes = aportes.reduce((sum, a) => sum + toNumber(a.valor ?? a.valorAporte ?? a.valor_aporte), 0);
-    
+    const totalAportes = aportes.reduce((sum, a) => sum + toNumber(a.valor), 0);
+
     return totalAportes + toNumber(meta.investimentoInicial);
   }
 
@@ -90,7 +91,7 @@ function ListagemMetas() {
     return total >= Number(meta.valor);
   }
 
-  if (dados === null) {
+  if (carregando) {
     return (
       <div className="container mt-5 text-center">
         <p>Carregando metas...</p>
@@ -138,9 +139,9 @@ function ListagemMetas() {
               <span className='resumo-valor'>
                 {totalInvestidoFiltrado > 0
                   ? totalInvestidoFiltrado.toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })
+                    style: 'currency',
+                    currency: 'BRL',
+                  })
                   : 'R$ 0,00'}
               </span>
             </div>
@@ -178,26 +179,49 @@ function ListagemMetas() {
                   ) : (
                     metasFiltradas.map((dado) => (
                       <tr key={dado.id}>
-                        <td>{dado.nome}</td>
-                        {/* Tratamento visual das datas utilizando a nova função */}
-                        <td>{formatarDataParaMesAno(dado.dataEnvio)}</td>
-                        <td>
-                          {dado.valor 
+                        <td className={
+                          isMetaConcluida(dado)
+                            ? 'text-success fw-bold'
+                            : ''
+                        }>{dado.nome}</td>
+                        <td className={
+                          isMetaConcluida(dado)
+                            ? 'text-success fw-bold'
+                            : ''
+                        }>{formatarDataParaMesAno(dado.dataEnvio)}</td>
+                        <td className={
+                          isMetaConcluida(dado)
+                            ? 'text-success fw-bold'
+                            : ''
+                        }>
+                          {dado.valor
                             ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                             : '—'}
                         </td>
-                        {/* Tratamento visual das datas utilizando a nova função */}
-                        <td>{formatarDataParaMesAno(dado.dataAlvo)}</td>
-                        <td>
-                          {totalInvestido(dado).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        <td className={
+                          isMetaConcluida(dado)
+                            ? 'text-success fw-bold'
+                            : ''
+                        }>{formatarDataParaMesAno(dado.dataAlvo)}</td>
+                        <td
+                          className={
+                            isMetaConcluida(dado)
+                              ? 'text-success fw-bold'
+                              : ''
+                          }
+                        >
+                          {totalInvestido(dado).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                          })}
                         </td>
                         <td>
                           <Stack spacing={1} direction='row'>
                             <IconButton aria-label='edit' onClick={() => editar(dado.id)}>
                               <EditIcon />
                             </IconButton>
-                            <IconButton 
-                              aria-label='delete' 
+                            <IconButton
+                              aria-label='delete'
                               onClick={() => window.confirm("Você realmente deseja excluir esta meta?") && excluir(dado.id)}
                             >
                               <DeleteIcon />

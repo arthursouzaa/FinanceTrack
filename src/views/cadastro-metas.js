@@ -8,18 +8,11 @@ import FormGroup from '../components/form-group';
 
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
 import '../custom.css';
-
-import axios from 'axios';
-import { BASE_URL } from '../config/axios';
+import api from '../config/axios';
 
 function CadastroMeta() {
-  // Captura o ID da URL de forma segura
-  const idParam = window.location.pathname.split('/').pop() !== 'cadastro-metas'
-    ? window.location.pathname.split('/').pop()
-    : undefined; 
-  
+  const { idParam } = useParams(); 
   const navigate = useNavigate();
-  const baseURL = `${BASE_URL}/metasFinanceiras`;
 
   function obterMesAtual() {
     const hoje = new Date();
@@ -28,10 +21,9 @@ function CadastroMeta() {
     return `${ano}-${mes}`;
   }
 
-  // Helper para cortar a string ISO "2026-06-01T00:00:00.000Z" para o padrão do input "2026-06"
   const formatarParaInputMes = (dataIso) => {
     if (!dataIso) return '';
-    return dataIso.substring(0, 7); // Pega apenas os 7 primeiros caracteres (YYYY-MM)
+    return dataIso.substring(0, 7);
   };
 
   const [id, setId] = useState('');
@@ -40,6 +32,7 @@ function CadastroMeta() {
   const [dataEnvio, setDataEnvio] = useState(obterMesAtual());
   const [dataAlvo, setDataAlvo] = useState('');
   const [investimentoInicial, setInvestimentoInicial] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
   const [dadosOriginais, setDadosOriginais] = useState(null);
 
@@ -83,12 +76,10 @@ function CadastroMeta() {
 
     const formatarParaIso = (anoMes) => {
       if (!anoMes) return null;
-      // Se a data já vier completa (no caso de reenvio sem alteração), mantém
       if (anoMes.includes('T')) return anoMes; 
       return `${anoMes}-01T00:00:00.000Z`;
     };
 
-    // Monta o payload inicial
     const payload = {
       nome,
       valor: formatarParaNumero(valor),
@@ -99,57 +90,64 @@ function CadastroMeta() {
       idCliente: Number(idUsuarioLogado)
     };
 
-    // SE FOR EDIÇÃO: injeta o ID mapeado da meta no JSON enviado
-    if (idParam) {
+    if (idParam && idParam !== 'undefined') {
       payload.id = Number(idParam);
     }
 
     try {
-      if (!idParam) {
-        await axios.post(baseURL, payload, {
-          headers: { 'Content-Type': 'application/json' },
-        });
+      if (!idParam || idParam === 'undefined') {
+        await api.post('/metasFinanceiras', payload);
         mensagemSucesso(`Meta "${nome}" cadastrada com sucesso!`);
       } else {
-        await axios.put(`${baseURL}/${idParam}`, payload, {
-          headers: { 'Content-Type': 'application/json' },
-        });
+        await api.put(`/metasFinanceiras/${idParam}`, payload);
         mensagemSucesso(`Meta "${nome}" alterada com sucesso!`);
       }
 
       navigate('/listagem-metas');
     } catch (error) {
-      mensagemErro(error?.response?.data || 'Erro ao salvar meta');
-    }
-  }
-
-  async function buscar() {
-    if (!idParam || idParam === 'undefined') return;
-
-    try {
-      const response = await axios.get(`${baseURL}/${idParam}`);
-      const data = response.data;
-
-      setDadosOriginais(data);
-
-      setId(data.id ?? '');
-      setNome(data.nome ?? '');
-      // Aplica a formatação curta para os inputs de mês carregarem visualmente
-      setDataEnvio(formatarParaInputMes(data.dataEnvio));
-      setValor(data.valor ?? '');
-      setDataAlvo(formatarParaInputMes(data.dataAlvo));
-      setInvestimentoInicial(data.investimentoInicial ?? '');
-    } catch (error) {
-      mensagemErro(error?.response?.data || 'Erro ao buscar meta');
+      const msg = error?.response?.data?.message || error?.response?.data || 'Erro ao salvar meta';
+      mensagemErro(msg);
     }
   }
 
   useEffect(() => {
-    buscar();
+    async function buscarMeta() {
+      if (!idParam || idParam === 'undefined') return;
+
+      setCarregando(true);
+      try {
+        const response = await api.get(`/metasFinanceiras/${idParam}`);
+        const data = response.data;
+
+        setDadosOriginais(data);
+
+        setId(data.id ?? '');
+        setNome(data.nome ?? '');
+        setDataEnvio(formatarParaInputMes(data.dataEnvio));
+        setValor(data.valor ?? '');
+        setDataAlvo(formatarParaInputMes(data.dataAlvo));
+        setInvestimentoInicial(data.investimentoInicial ?? '');
+      } catch (error) {
+        console.error(error);
+        mensagemErro('Erro ao buscar dados da meta para edição.');
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    buscarMeta();
   }, [idParam]);
 
+  if (carregando) {
+    return (
+      <div className="container mt-5 text-center">
+        <p>Carregando informações da meta...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className='container'>
+    <div className='container mb-5'>
       <Card title={idParam ? 'Editar Meta' : 'Cadastro de Meta'} icon="bi bi-cash-coin">
         <div className='row'>
           <div className='col-lg-12'>
