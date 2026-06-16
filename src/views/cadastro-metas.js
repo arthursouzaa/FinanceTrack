@@ -62,8 +62,18 @@ function CadastroMeta() {
   };
 
   async function salvar() {
-    if (!nome || !valor || !dataEnvio || !dataAlvo) {
+    if (!nome || nome.trim() === '' || !valor || Number(valor) <= 0 || !dataEnvio || !dataAlvo) {
       mensagemErro('Por favor, preencha todos os campos obrigatórios (*)');
+      return;
+    }
+
+    if (dataAlvo < dataEnvio) {
+      mensagemErro('A data alvo não pode ser anterior à data inicial da meta.');
+      return;
+    }
+
+    if (investimentoInicial && Number(investimentoInicial) < 0) {
+      mensagemErro('O investimento inicial não pode ser negativo.');
       return;
     }
 

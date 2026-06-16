@@ -15,8 +15,15 @@ function Login() {
   const [carregando, setCarregando] = useState(false);
 
   const handleLogin = () => {
-    if (!email || !senha) {
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email || email.trim() === '' || !senha || senha.trim() === '') {
       mensagemErro('Por favor, preencha o e-mail e a senha.');
+      return;
+    }
+
+    if (!emailValido.test(email)) {
+      mensagemErro('Informe um e-mail válido.');
       return;
     }
 

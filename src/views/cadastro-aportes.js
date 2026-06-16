@@ -68,7 +68,7 @@ function CadastroAporte() {
     }
 
     async function salvar() {
-        if (!valor || !data || !idMetaFinanceira) {
+        if (!valor || Number(valor) <= 0 || !data || !idMetaFinanceira) {
             mensagemErro('Por favor, preencha todos os campos obrigatórios (*)');
             return;
         }

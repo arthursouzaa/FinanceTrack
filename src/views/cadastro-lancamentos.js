@@ -65,7 +65,7 @@ function CadastroLancamento() {
   }
 
   async function salvar() {
-    if (!nome || !data || !valor || !idCategoria) {
+    if (!nome || nome.trim() === '' || !data || !valor || !idCategoria) {
       mensagemErro('Por favor, preencha todos os campos obrigatórios (*)');
       return;
     }
@@ -75,8 +75,8 @@ function CadastroLancamento() {
       return;
     }
 
-    if (tipo === 'Despesa' && parcelada && (!quantidadeParcelas || Number(quantidadeParcelas) <= 0)) {
-      mensagemErro('Por favor, informe uma quantidade válida de parcelas (*)');
+    if (tipo === 'Despesa' && parcelada && (!quantidadeParcelas || Number(quantidadeParcelas) <= 1)) {
+      mensagemErro('Por favor, informe uma quantidade válida de parcelas maior que 1 (*)');
       return;
     }
 
