@@ -10,7 +10,6 @@ import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
-// ALTERADO: Uso da instância configurada com interceptor de autenticação
 import api from '../config/axios';
 import { filtrarRegistrosDoUsuario } from '../utils/usuarioLogado';
 
@@ -30,7 +29,6 @@ function ListagemCategorias() {
     navigate(`/cadastro-categorias/${id}?tipo=${tipo}`);
   };
 
-  // Carregamento inicial robusto com tratamento correto de concorrência
   useEffect(() => {
     async function carregarCategorias() {
       try {
@@ -39,7 +37,6 @@ function ListagemCategorias() {
           api.get('/categoriasDespesa'),
         ]);
 
-        // Filtra e injeta explicitamente o tipo do registro para identificação na tabela unificada
         const receitasFiltradas = filtrarRegistrosDoUsuario(receitasRes.data).map(r => ({ ...r, tipo: 'Receita' }));
         const despesasFiltradas = filtrarRegistrosDoUsuario(despesasRes.data).map(d => ({ ...d, tipo: 'Despesa' }));
 
@@ -63,7 +60,6 @@ function ListagemCategorias() {
       await api.delete(rota);
       mensagemSucesso('Categoria excluída com sucesso!');
 
-      // Atualiza o respectivo estado local de forma reativa
       if (tipo === 'Receita') {
         setDadosReceitas(prev => prev.filter(item => item.id !== id));
       } else {
@@ -186,12 +182,11 @@ function ListagemCategorias() {
                             <IconButton
                               aria-label='delete'
                               onClick={(event) =>
-                                window.confirm('Você realmente deseja excluir esta categoria?')
+                                window.confirm('Tem certeza de que deseja excluir? Isso apagará os registros relacionados, como os lançamentos.')
                                   ? excluir(dado.id, dado.tipo)
                                   : event.preventDefault()
                               }
                               size="small"
-                              color="error"
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>

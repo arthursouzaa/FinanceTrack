@@ -46,16 +46,25 @@ function RelatorioAnual() {
           api.get('/metasFinanceiras')
         ]);
 
-        setReceitas(filtrarRegistrosDoUsuario(receitasRes.data));
-        setDespesas(filtrarRegistrosDoUsuario(despesasRes.data));
-        setAportes(filtrarRegistrosDoUsuario(aportesRes.data));
-        setFormasPagamento(filtrarRegistrosDoUsuario(formasPagamentoRes.data));
-        setDadosCategoriasReceita(filtrarRegistrosDoUsuario(categoriasRRes.data));
-        setDadosCategoriasDespesa(filtrarRegistrosDoUsuario(categoriasDRes.data));
-        setDadosMetasFinanceiras(filtrarRegistrosDoUsuario(metasRes.data));
+        const metasDoUsuario = filtrarRegistrosDoUsuario(metasRes.data || []);
+        setDadosMetasFinanceiras(metasDoUsuario);
+
+        const idsMetasDoUsuario = new Set(metasDoUsuario.map(m => String(m.id)));
+        const aportesBrutos = aportesRes.data || [];
+        const aportesFiltrados = aportesBrutos.filter(aporte => 
+          idsMetasDoUsuario.has(String(aporte.idMetaFinanceira))
+        );
+        setAportes(aportesFiltrados);
+
+        setReceitas(filtrarRegistrosDoUsuario(receitasRes.data || []));
+        setDespesas(filtrarRegistrosDoUsuario(despesasRes.data || []));
+        setFormasPagamento(filtrarRegistrosDoUsuario(formasPagamentoRes.data || []));
+        setDadosCategoriasReceita(filtrarRegistrosDoUsuario(categoriasRRes.data || []));
+        setDadosCategoriasDespesa(filtrarRegistrosDoUsuario(categoriasDRes.data || []));
+        
       } catch (error) {
         console.error('Erro ao buscar dados do relatório:', error);
-        mensagemErro('Erro ao carregar os dados e gráficos do relatório.');
+        mensagemErro('Erro ao carregar os dados and gráficos do relatório.');
       } finally {
         setCarregando(false);
       }
@@ -83,16 +92,18 @@ function RelatorioAnual() {
 
   function obterDadosFiltrados(dados) {
     return dados.filter((dado) => {
-      if (!dado.data) return true;
-      const ano = new Date(dado.data).getFullYear();
+      const dataString = dado.data || dado.dataEnvio;
+      if (!dataString) return true;
+      const ano = new Date(dataString).getFullYear();
       return filtroAno === 'Todos' || ano === Number(filtroAno);
     });
   }
 
   function obterAnosDisponiveis() {
     const todasDatas = [...receitas, ...despesas, ...aportes]
-      .filter((l) => l.data)
-      .map((l) => new Date(l.data).getFullYear());
+      .map((l) => l.data || l.dataEnvio)
+      .filter(Boolean)
+      .map((d) => new Date(d).getFullYear());
 
     return [...new Set(todasDatas)].sort((a, b) => b - a);
   }
@@ -115,7 +126,7 @@ function RelatorioAnual() {
   const labelsReceitas = dadosCategoriasReceita.map((c) => c.nome);
   const valoresPorCategoriasReceita = dadosCategoriasReceita.map((categoria) => {
     return receitasFiltradas
-      .filter((receita) => String(receita.idCategoriaReceita) === String(categoria.id))
+      .filter((receita) => String(receita.idCategoriaReceita || receita.categoriaReceita?.id) === String(categoria.id))
       .reduce((soma, receita) => soma + Number(receita.valor || 0), 0);
   });
 
@@ -132,7 +143,7 @@ function RelatorioAnual() {
   const labelsDespesas = dadosCategoriasDespesa.map((c) => c.nome);
   const valoresPorCategoriasDespesa = dadosCategoriasDespesa.map((categoria) => {
     return despesasFiltradas
-      .filter((despesa) => String(despesa.idCategoriaDespesa) === String(categoria.id))
+      .filter((despesa) => String(despesa.idCategoriaDespesa || despesa.categoriaDespesa?.id) === String(categoria.id))
       .reduce((soma, despesa) => soma + Number(despesa.valor || 0), 0);
   });
 
@@ -154,8 +165,8 @@ function RelatorioAnual() {
     }
   };
 
-  const fixas = despesasFiltradas.filter((d) => d.volume).length;
-  const naoFixas = despesasFiltradas.filter((d) => !d.volume).length;
+  const fixas = despesasFiltradas.filter((d) => d.volume === true || d.fixa === true).length;
+  const naoFixas = despesasFiltradas.filter((d) => !d.volume && !d.fixa).length;
   
   const dadosGraficoBarrasVolume = {
     labels: ['Fixas', 'Não Fixas'],
@@ -226,7 +237,7 @@ function RelatorioAnual() {
       const dataPorMes = meses.map((_, mesIndex) => {
         const mes = mesIndex + 1;
         return despesasFiltradas
-          .filter((d) => d.parcelada === true && String(d.idFormaPagamento) === String(forma.id) && d.data && new Date(d.data).getMonth() + 1 === mes)
+          .filter((d) => d.parcelada === true && String(d.idFormaPagamento || d.formaPagamento?.id) === String(forma.id) && d.data && new Date(d.data).getMonth() + 1 === mes)
           .reduce((sum, d) => sum + Number(d.valor || 0), 0);
       });
       

@@ -149,7 +149,7 @@ function ListagemAportes() {
                             <IconButton
                               aria-label='delete'
                               onClick={() =>
-                                window.confirm("Você realmente deseja excluir este aporte?") && excluir(dado.id)
+                                window.confirm("Tem certeza que deseja excluir?") && excluir(dado.id)
                               }
                             >
                               <DeleteIcon />

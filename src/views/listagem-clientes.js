@@ -44,6 +44,12 @@ function ListagemClientes() {
   };
 
   async function excluir(id) {
+    const usuarioLogado = obterUsuarioLogado();
+    if (String(id) === String(usuarioLogado?.id)) {
+      mensagemErro('Ação não permitida: Você não pode excluir sua própria conta de administrador.');
+      return;
+    }
+
     try {
       await api.delete(`/clientes/${id}`);
       mensagemSucesso(`Cliente excluído com sucesso!`);
@@ -107,6 +113,8 @@ function ListagemClientes() {
     );
   }
 
+  const idUsuarioLogado = obterUsuarioLogado()?.id;
+
   return (
     <div className='container'>
       <Card title='Gerenciamento de Clientes' icon="bi bi-people-fill">
@@ -138,35 +146,42 @@ function ListagemClientes() {
                       </td>
                     </tr>
                   ) : (
-                    dados.map((cliente) => (
-                      <tr key={cliente.id}>
-                        <td>{cliente.nome}</td>
-                        <td>{cliente.email}</td>
-                        <td>{aplicarMascaraTelefone(cliente.telefone)}</td>
-                        <td>
-                          {cliente.admin ? (
-                            <span className="badge bg-danger">Administrador</span>
-                          ) : (
-                            <span className="badge bg-info">Usuário Comum</span>
-                          )}
-                        </td>
-                        <td>
-                          <Stack spacing={1} padding={0} direction='row'>
-                            <IconButton aria-label='edit' onClick={() => editar(cliente)}>
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              aria-label='delete'
-                              onClick={() =>
-                                window.confirm(`Você realmente deseja excluir o usuário ${cliente.nome}?`) && excluir(cliente.id)
-                              }
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Stack>
-                        </td>
-                      </tr>
-                    ))
+                    dados.map((cliente) => {
+                      const ehOMesmoUsuario = String(cliente.id) === String(idUsuarioLogado);
+
+                      return (
+                        <tr key={cliente.id}>
+                          <td>{cliente.nome} {ehOMesmoUsuario && <strong>(Você)</strong>}</td>
+                          <td>{cliente.email}</td>
+                          <td>{aplicarMascaraTelefone(cliente.telefone)}</td>
+                          <td>
+                            {cliente.admin ? (
+                              <span className="badge bg-danger">Administrador</span>
+                            ) : (
+                              <span className="badge bg-info">Usuário Comum</span>
+                            )}
+                          </td>
+                          <td>
+                            <Stack spacing={1} padding={0} direction='row'>
+                              <IconButton aria-label='edit' onClick={() => editar(cliente)}>
+                                <EditIcon />
+                              </IconButton>
+                              
+                              <IconButton
+                                aria-label='delete'
+                                disabled={ehOMesmoUsuario}
+                                style={ehOMesmoUsuario ? { opacity: 0.4 } : {}}
+                                onClick={() =>
+                                  window.confirm(`Tem certeza que deseja excluir o usuário ${cliente.nome}?`) && excluir(cliente.id)
+                                }
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Stack>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

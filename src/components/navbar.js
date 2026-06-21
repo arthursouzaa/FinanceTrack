@@ -41,21 +41,42 @@ function Navbar(props) {
               icon='bi bi-house'
             />
 
-            <NavbarItem
+            <NavbarDropdown
               render='true'
-              href='/listagem-lancamentos'
+              href='#'
               label='Lançamentos'
-              icon='bi bi-wallet2'
+
+              links={[
+                {
+                  href: "/listagem-lancamentos",
+                  label: "Lançamentos"
+                },
+                {
+                  href: "/listagem-categorias",
+                  label: "Categorias"
+                },
+                {
+                  href: "/listagem-formasPagamento",
+                  label: "Formas de Pagamento"
+                },
+              ]}
+              icon="bi bi-wallet2"
             />
 
             <NavbarDropdown
               render='true'
               href='#'
               label='Objetivos'
-              link1='/listagem-metas'
-              link1label='Metas'
-              link2='/listagem-aportes'
-              link2label='Aportes'
+              links={[
+                {
+                  href: "/listagem-metas",
+                  label: "Metas"
+                },
+                {
+                  href: "/listagem-aportes",
+                  label: "Aportes"
+                }
+              ]}
               icon="bi bi-cash-coin"
             />
 
@@ -70,10 +91,17 @@ function Navbar(props) {
               render='true'
               href='#'
               label='Relatórios'
-              link1='/relatorio-mensal'
-              link1label='Relatório Mensal'
-              link2='/relatorio-anual'
-              link2label='Relatório Anual'
+              links={[
+                {
+                  href: "/relatorio-mensal",
+                  label: "Relatório Mensal"
+                },
+                {
+                  href: "/relatorio-anual",
+                  label: "Relatório Anual"
+                },
+
+              ]}
               icon='bi bi-bank'
             />
 
@@ -85,11 +113,7 @@ function Navbar(props) {
             />
           </ul>
 
-
-
-          {/* Menu Alinhado à Direita: Perfil e Logout */}
           <ul className='navbar-nav ms-auto align-items-lg-center'>
-            {/* ADICIONADO: Link direto para a listagem/edição do perfil logado */}
             <NavbarItem
               render='true'
               href='/listagem-perfil'

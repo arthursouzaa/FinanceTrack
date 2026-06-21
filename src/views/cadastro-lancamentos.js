@@ -37,6 +37,9 @@ function CadastroLancamento() {
   const [categoriasDespesa, setCategoriasDespesa] = useState([]);
   const [carregando, setCarregando] = useState(true);
 
+  const usuarioLogado = obterUsuarioLogado();
+  const idUsuarioAtual = usuarioLogado?.id ? Number(usuarioLogado.id) : null;
+
   function restaurarDados() {
     if (!dadosOriginais) {
       setId('');
@@ -79,9 +82,6 @@ function CadastroLancamento() {
       mensagemErro('Por favor, informe uma quantidade válida de parcelas (*)');
       return;
     }
-
-    const usuarioLogado = obterUsuarioLogado();
-    const idUsuarioAtual = usuarioLogado?.id ? Number(usuarioLogado.id) : null;
 
     if (!idUsuarioAtual) {
       mensagemErro('Erro: Usuário não identificado. Faça login novamente.');
@@ -131,9 +131,6 @@ function CadastroLancamento() {
 
   useEffect(() => {
     async function inicializarComponente() {
-      const usuarioLogado = obterUsuarioLogado();
-      const idUsuarioAtual = usuarioLogado?.id ? Number(usuarioLogado.id) : null;
-
       if (!idUsuarioAtual) {
         mensagemErro('Usuário não autenticado.');
         setCarregando(false);
@@ -263,8 +260,9 @@ function CadastroLancamento() {
                   value={idCategoria}
                   onChange={(e) => setIdCategoria(e.target.value)}
                 >
-                  <option value=''></option>
+                  <option value=''>Selecione uma categoria...</option>
                   {(tipo === 'Receita' ? categoriasReceita : categoriasDespesa)
+                    .filter(c => Number(c.idCliente) === idUsuarioAtual)
                     .map(c => (
                       <option key={c.id} value={c.id}>{c.nome}</option>
                     ))}
@@ -303,10 +301,12 @@ function CadastroLancamento() {
                   onChange={(e) => setIdFormaPagamento(e.target.value)}
                   disabled={tipo === 'Receita'}
                 >
-                  <option value=''></option>
-                  {formasPagamento.map(fp => (
-                    <option key={fp.id} value={fp.id}>{fp.nome}</option>
-                  ))}
+                  <option value=''>Selecione uma forma de pagamento...</option>
+                  {formasPagamento
+                    .filter(fp => Number(fp.idCliente) === idUsuarioAtual)
+                    .map(fp => (
+                      <option key={fp.id} value={fp.id}>{fp.nome}</option>
+                    ))}
                 </select>
               </FormGroup>
 
