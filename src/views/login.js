@@ -23,7 +23,7 @@ function Login() {
     setCarregando(true);
 
     axios
-      .post(`${BASE_URL}/clientes/login`, { email, senha })
+      .post(`${BASE_URL}/clientes/auth`, { email, senha })
       .then((response) => {
 
         const dadosAutenticacao = response.data;

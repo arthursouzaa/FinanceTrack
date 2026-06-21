@@ -18,14 +18,14 @@ function Navbar(props) {
         <a href='/' className='navbar-brand'>
           <img src={logo} alt="FinanceTrack" style={{ maxWidth: '100px', height: '50%' }} />
         </a>
-        
-        <button 
-          className="navbar-toggler" 
-          type="button" 
-          data-bs-toggle="collapse" 
-          data-bs-target="#navbarResponsive" 
-          aria-controls="navbarResponsive" 
-          aria-expanded="false" 
+
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
           aria-label="Toggle navigation"
         >
           <span className='navbar-toggler-icon'></span>
@@ -33,13 +33,14 @@ function Navbar(props) {
 
         <div className='collapse navbar-collapse' id='navbarResponsive'>
           <ul className='navbar-nav me-auto'>
+
             <NavbarItem
               render='true'
               href='/'
               label='Início'
               icon='bi bi-house'
             />
-            
+
             <NavbarItem
               render='true'
               href='/listagem-lancamentos'
@@ -75,7 +76,16 @@ function Navbar(props) {
               link2label='Relatório Anual'
               icon='bi bi-bank'
             />
+
+            <NavbarItem
+              render='true'
+              href='/listagem-clientes'
+              label='Clientes'
+              icon='bi bi-people'
+            />
           </ul>
+
+
 
           {/* Menu Alinhado à Direita: Perfil e Logout */}
           <ul className='navbar-nav ms-auto align-items-lg-center'>

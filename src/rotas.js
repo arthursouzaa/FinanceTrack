@@ -9,6 +9,7 @@ import CadastroAportes from './views/cadastro-aportes';
 import CadastroFormasPagamento from './views/cadastro-formasPagamento';
 import CadastroCategorias from './views/cadastro-categorias';
 import CadastroLancamentos from './views/cadastro-lancamentos';
+import CadastroTipoPerfil from './views/cadastro-tipo-perfil';
 
 import ListagemMetas from './views/listagem-metas';
 import ListagemAportes from './views/listagem-aportes';
@@ -17,6 +18,7 @@ import ListagemCategorias from './views/listagem-categorias';
 import ListagemLancamentos from './views/listagem-lancamentos';
 import ListagemPagamentos from './views/listagem-pagamentos';
 import ListagemPerfil from './views/listagem-perfil';
+import ListagemClientes from './views/listagem-clientes';
 
 import RelatorioMensal from './views/relatorio-mensal';
 import RelatorioAnual from './views/relatorio-anual';
@@ -27,7 +29,7 @@ import Navbar from './components/navbar';
 
 function RotasInternas() {
   const location = useLocation();
-  
+
   const mostrarNavbar = location.pathname !== '/login';
 
   return (
@@ -41,6 +43,7 @@ function RotasInternas() {
         <Route path='/cadastro-formasPagamento/:idParam?' element={<RotaProtegida element={<CadastroFormasPagamento />} />} />
         <Route path='/cadastro-categorias/:idParam?' element={<RotaProtegida element={<CadastroCategorias />} />} />
         <Route path='/cadastro-lancamentos/:idParam?' element={<RotaProtegida element={<CadastroLancamentos />} />} />
+        <Route path='/cadastro-tipo-perfil/:idParam?' element={<RotaProtegida element={<CadastroTipoPerfil />} />} />
 
         <Route path='/listagem-metas' element={<RotaProtegida element={<ListagemMetas />} />} />
         <Route path='/listagem-aportes' element={<RotaProtegida element={<ListagemAportes />} />} />
@@ -49,6 +52,7 @@ function RotasInternas() {
         <Route path='/listagem-lancamentos' element={<RotaProtegida element={<ListagemLancamentos />} />} />
         <Route path='/listagem-pagamentos' element={<RotaProtegida element={<ListagemPagamentos />} />} />
         <Route path='/listagem-perfil/:idParam?' element={<RotaProtegida element={<ListagemPerfil />} />} />
+        <Route path='/listagem-clientes' element={<RotaProtegida element={<ListagemClientes />} />} />
 
         <Route path='/relatorio-mensal' element={<RotaProtegida element={<RelatorioMensal />} />} />
         <Route path='/relatorio-anual' element={<RotaProtegida element={<RelatorioAnual />} />} />

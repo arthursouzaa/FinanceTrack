@@ -131,11 +131,20 @@ function CadastroLancamento() {
 
   useEffect(() => {
     async function inicializarComponente() {
+      const usuarioLogado = obterUsuarioLogado();
+      const idUsuarioAtual = usuarioLogado?.id ? Number(usuarioLogado.id) : null;
+
+      if (!idUsuarioAtual) {
+        mensagemErro('Usuário não autenticado.');
+        setCarregando(false);
+        return;
+      }
+
       try {
         const [fp, cr, cd] = await Promise.all([
-          api.get('/formasPagamento'),
-          api.get('/categoriasReceita'),
-          api.get('/categoriasDespesa')
+          api.get(`/formasPagamento?idCliente=${idUsuarioAtual}`),
+          api.get(`/categoriasReceita?idCliente=${idUsuarioAtual}`),
+          api.get(`/categoriasDespesa?idCliente=${idUsuarioAtual}`)
         ]);
 
         setFormasPagamento(fp.data || []);

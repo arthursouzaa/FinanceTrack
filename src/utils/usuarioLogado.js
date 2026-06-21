@@ -1,17 +1,21 @@
 const CHAVE_TOKEN = '_financetrack_token';
 const CHAVE_USUARIO = '_financetrack_user';
 
-
 export function salvarUsuarioLogado(dadosAutenticacao) {
   if (!dadosAutenticacao || typeof window === 'undefined') return;
 
-  const { token, id, nome, email } = dadosAutenticacao;
+  const { token, id, nome, email, admin } = dadosAutenticacao;
 
   if (token) {
     localStorage.setItem(CHAVE_TOKEN, token);
   }
   
-  localStorage.setItem(CHAVE_USUARIO, JSON.stringify({ id, nome, email }));
+  localStorage.setItem(CHAVE_USUARIO, JSON.stringify({ 
+    id, 
+    nome, 
+    email, 
+    admin: admin === true || admin === 'true'
+  }));
 }
 
 export function obterUsuarioLogado() {
@@ -30,7 +34,6 @@ export function obterIdUsuarioLogado() {
   const usuario = obterUsuarioLogado();
   return usuario?.id ? String(usuario.id) : '';
 }
-
 
 export function filtrarRegistrosDoUsuario(registros, idUsuarioAtual = obterIdUsuarioLogado()) {
   if (!Array.isArray(registros)) return [];
