@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../assets/financetrack-logo.png';
 import NavbarItem from './navbarItem';
 import NavbarDropdown from './navbarDropdown';
+import { obterUsuarioLogado } from '../utils/usuarioLogado';
 
 function Navbar(props) {
   const navigate = useNavigate();
+
+  const usuarioLogado = obterUsuarioLogado();
+  const isAdmin = usuarioLogado && usuarioLogado.admin === true;
 
   const handleLogout = () => {
     window.localStorage.clear();
@@ -104,13 +108,14 @@ function Navbar(props) {
               ]}
               icon='bi bi-bank'
             />
-
+          {isAdmin && (
             <NavbarItem
               render='true'
               href='/listagem-clientes'
               label='Clientes'
               icon='bi bi-people'
             />
+          )}
           </ul>
 
           <ul className='navbar-nav ms-auto align-items-lg-center'>

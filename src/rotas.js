@@ -23,8 +23,12 @@ import ListagemClientes from './views/listagem-clientes';
 import RelatorioMensal from './views/relatorio-mensal';
 import RelatorioAnual from './views/relatorio-anual';
 
+import AcessoNegado from './views/acesso-negado';
+import NaoEncontrado from './views/nao-encontrado';
+
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
 import { RotaProtegida } from './utils/RotaProtegida';
+import { RotaAdmin } from './utils/RotaAdmin';
 import Navbar from './components/navbar';
 
 function RotasInternas() {
@@ -37,13 +41,14 @@ function RotasInternas() {
       <Routes>
         <Route path='/login' element={<Login />} />
         <Route path='/' element={<RotaProtegida element={<Home />} />} />
+        <Route path='/acesso-negado' element={<RotaProtegida element={<AcessoNegado />} />} />
 
         <Route path='/cadastro-metas/:idParam?' element={<RotaProtegida element={<CadastroMetas />} />} />
         <Route path='/cadastro-aportes/:idParam?' element={<RotaProtegida element={<CadastroAportes />} />} />
         <Route path='/cadastro-formasPagamento/:idParam?' element={<RotaProtegida element={<CadastroFormasPagamento />} />} />
         <Route path='/cadastro-categorias/:idParam?' element={<RotaProtegida element={<CadastroCategorias />} />} />
         <Route path='/cadastro-lancamentos/:idParam?' element={<RotaProtegida element={<CadastroLancamentos />} />} />
-        <Route path='/cadastro-tipo-perfil/:idParam?' element={<RotaProtegida element={<CadastroTipoPerfil />} />} />
+        <Route path='/cadastro-tipo-perfil/:idParam?' element={<RotaAdmin element={<CadastroTipoPerfil />} />} />
 
         <Route path='/listagem-metas' element={<RotaProtegida element={<ListagemMetas />} />} />
         <Route path='/listagem-aportes' element={<RotaProtegida element={<ListagemAportes />} />} />
@@ -52,10 +57,13 @@ function RotasInternas() {
         <Route path='/listagem-lancamentos' element={<RotaProtegida element={<ListagemLancamentos />} />} />
         <Route path='/listagem-pagamentos' element={<RotaProtegida element={<ListagemPagamentos />} />} />
         <Route path='/listagem-perfil/:idParam?' element={<RotaProtegida element={<ListagemPerfil />} />} />
-        <Route path='/listagem-clientes' element={<RotaProtegida element={<ListagemClientes />} />} />
+        <Route path='/listagem-clientes' element={<RotaAdmin element={<ListagemClientes />} />} />
 
         <Route path='/relatorio-mensal' element={<RotaProtegida element={<RelatorioMensal />} />} />
         <Route path='/relatorio-anual' element={<RotaProtegida element={<RelatorioAnual />} />} />
+      
+        {/* ÚLTIMA ROTA DA LISTA: deve estar sempre no final */}
+        <Route path='*' element={<RotaProtegida element={<NaoEncontrado />} />} />
       </Routes>
       {mostrarNavbar && <Navbar />}
     </>
