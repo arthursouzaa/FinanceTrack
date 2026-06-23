@@ -31,7 +31,8 @@ function Login() {
         if (dadosAutenticacao.token) {
           localStorage.setItem('_financetrack_token', dadosAutenticacao.token);
           salvarUsuarioLogado(dadosAutenticacao);
-          mensagemSucesso(`Bem-vindo, ${dadosAutenticacao.nome || 'Usuário'}!`);
+          // mensagemSucesso(`Bem-vindo, ${dadosAutenticacao.nome || 'Usuário'}!`);
+          mensagemSucesso(`Seja bem-vindo(a) ao FinanceTrack!`);
           navigate('/');
         } else {
           mensagemErro('Erro inesperado na resposta do servidor.');
