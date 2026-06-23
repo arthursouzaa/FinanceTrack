@@ -156,6 +156,7 @@ function CadastroMeta() {
                 <input
                   type='text'
                   id='inputNome'
+                  placeholder='Ex: Viagem, Carro, Reserva de Emergência...'
                   value={nome}
                   className='form-control'
                   onChange={(e) => setNome(e.target.value)}

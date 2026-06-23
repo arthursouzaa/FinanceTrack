@@ -112,6 +112,7 @@ function CadastroFormaPagamento() {
                   id='inputNome'
                   value={nome}
                   className='form-control'
+                  placeholder='Ex: Cartão de Crédito, Pix, Boleto...'
                   name='nome'
                   onChange={(e) => setNome(e.target.value)}
                 />

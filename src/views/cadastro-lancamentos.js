@@ -239,7 +239,7 @@ function CadastroLancamento() {
               <FormGroup label='Nome: *'>
                 <input
                   className='form-control'
-                  placeholder='Ex: Conta de Luz, Freelance...'
+                  placeholder={tipo === 'Receita' ? 'Ex: Salário, Freelance...' : 'Ex: Conta de Luz, Aluguel...'}
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                 />
