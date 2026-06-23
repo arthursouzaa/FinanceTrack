@@ -6,6 +6,7 @@ import { salvarUsuarioLogado } from '../utils/usuarioLogado';
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
 import { mensagemSucesso, mensagemErro } from '../components/toastr';
+import logo from '../assets/financetrack-logocolorida.png';
 import '../custom.css';
 
 function Login() {
@@ -31,8 +32,11 @@ function Login() {
 
     axios
       .post(`${BASE_URL}/clientes/auth`, { email, senha })
+      .post(`${BASE_URL}/clientes/login`, {
+        email: email.trim(),
+        senha
+      })
       .then((response) => {
-
         const dadosAutenticacao = response.data;
 
         if (dadosAutenticacao.token) {
@@ -46,6 +50,7 @@ function Login() {
       })
       .catch((error) => {
         console.error('Erro ao fazer login:', error);
+
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
           mensagemErro('E-mail ou senha incorretos.');
         } else {
@@ -64,63 +69,62 @@ function Login() {
   };
 
   return (
-    <div className="container" style={{ marginTop: '50px', minHeight: '100vh' }}>
-      <div className="row justify-content-center">
-        <div className="col-lg-5">
-          <Card title="Acesso ao FinanceTrack">
+    <div className="login-container">
+      <div className="login-card-wrapper">
+        <Card title="Login">
+          <div className="text-center login-topo">
+            <img
+              src={logo}
+              alt="FinanceTrack"
+              className="login-logo"
+            />
 
-            <div className="form-group" style={{ marginBottom: '15px' }}>
-              <FormGroup label="E-mail:" htmlFor="email">
-                <input
-                  type="email"
-                  id="email"
-                  className="form-control"
-                  placeholder="Digite seu e-mail"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  disabled={carregando}
-                />
-              </FormGroup>
-            </div>
+            <p className="login-subtitulo">
+              Acesse sua conta para continuar
+            </p>
+          </div>
 
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <FormGroup label="Senha:" htmlFor="senha">
-                <input
-                  type="password"
-                  id="senha"
-                  className="form-control"
-                  placeholder="Digite sua senha"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  disabled={carregando}
-                />
-              </FormGroup>
-            </div>
+          <FormGroup label="E-mail *" htmlFor="email">
+            <input
+              type="email"
+              id="email"
+              className="form-control"
+              placeholder="Digite seu e-mail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={carregando}
+            />
+          </FormGroup>
 
-            <div className="d-flex gap-2" style={{ marginTop: '20px' }}>
-              <button
-                onClick={handleLogin}
-                className="btn btn-success flex-grow-1"
-                disabled={carregando}
-              >
-                {carregando ? 'Autenticando...' : 'Entrar'}
-              </button>
-              <button
-                onClick={() => {
-                  setEmail('');
-                  setSenha('');
-                }}
-                className="btn btn-secondary"
-                disabled={carregando}
-              >
-                Limpar
-              </button>
-            </div>
+          <FormGroup label="Senha *" htmlFor="senha">
+            <input
+              type="password"
+              id="senha"
+              className="form-control"
+              placeholder="Digite sua senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={carregando}
+            />
+          </FormGroup>
 
-          </Card>
-        </div>
+          <button
+            onClick={handleLogin}
+            className="btn btn-success w-100 login-botao"
+            disabled={carregando}
+          >
+            {carregando ? 'Autenticando...' : 'Login'}
+          </button>
+
+          <div className="login-cadastro">
+            Não possui uma conta?{' '}
+            <span onClick={() => navigate('/cadastro-cliente')}>
+              CADASTRE-SE
+            </span>
+          </div>
+        </Card>
       </div>
     </div>
   );
