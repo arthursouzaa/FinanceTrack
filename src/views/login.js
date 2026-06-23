@@ -31,10 +31,9 @@ function Login() {
     setCarregando(true);
 
     axios
-      .post(`${BASE_URL}/clientes/auth`, { email, senha })
-      .post(`${BASE_URL}/clientes/login`, {
-        email: email.trim(),
-        senha
+      .post(`${BASE_URL}/clientes/auth`, {
+          email: email.trim(),
+          senha
       })
       .then((response) => {
         const dadosAutenticacao = response.data;
