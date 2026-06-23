@@ -297,7 +297,7 @@ function ListagemLancamentos() {
                             <IconButton
                               aria-label="delete"
                               onClick={() =>
-                                window.confirm('Você realmente deseja excluir este lançamento?') &&
+                                window.confirm('Tem certeza de que deseja excluir?') &&
                                 excluir(dado.id, dado.tipo)
                               }
                             >

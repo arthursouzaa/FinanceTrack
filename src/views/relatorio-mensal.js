@@ -43,12 +43,20 @@ function RelatorioMensal() {
           api.get('/metasFinanceiras')
         ]);
 
-        setReceitas(filtrarRegistrosDoUsuario(receitasRes.data));
-        setDespesas(filtrarRegistrosDoUsuario(despesasRes.data));
-        setAportes(filtrarRegistrosDoUsuario(aportesRes.data));
-        setDadosCategoriasReceita(catReceitasRes.data || []);
-        setDadosCategoriasDespesa(catDespesasRes.data || []);
-        setDadosMetasFinanceiras(metasRes.data || []);
+        const metasDoUsuario = filtrarRegistrosDoUsuario(metasRes.data || []);
+        setDadosMetasFinanceiras(metasDoUsuario);
+
+        const idsMetasDoUsuario = new Set(metasDoUsuario.map(m => String(m.id)));
+        const aportesBrutos = aportesRes.data || [];
+        const aportesFiltrados = aportesBrutos.filter(aporte => 
+          idsMetasDoUsuario.has(String(aporte.idMetaFinanceira))
+        );
+        setAportes(aportesFiltrados);
+
+        setReceitas(filtrarRegistrosDoUsuario(receitasRes.data || []));
+        setDespesas(filtrarRegistrosDoUsuario(despesasRes.data || []));
+        setDadosCategoriasReceita(filtrarRegistrosDoUsuario(catReceitasRes.data || []));
+        setDadosCategoriasDespesa(filtrarRegistrosDoUsuario(catDespesasRes.data || []));
 
       } catch (error) {
         console.error('Erro ao carregar dados do relatório:', error);
@@ -72,10 +80,11 @@ function RelatorioMensal() {
 
   function obterDadosFiltrados(dados) {
     return dados.filter((dado) => {
-      if (!dado.data) return true;
+      const dataString = dado.data || dado.dataEnvio;
+      if (!dataString) return true;
 
-      const mes = new Date(dado.data).getUTCMonth() + 1;
-      const ano = new Date(dado.data).getUTCFullYear();
+      const mes = new Date(dataString).getUTCMonth() + 1;
+      const ano = new Date(dataString).getUTCFullYear();
 
       const filtraMes = filtroMes === 'Todos' || mes === Number(filtroMes);
       const filtraAno = filtroAno === 'Todos' || ano === Number(filtroAno);
@@ -86,8 +95,9 @@ function RelatorioMensal() {
 
   function obterAnosDisponiveis() {
     const todasDatas = [...receitas, ...despesas, ...aportes]
-      .filter(l => l.data)
-      .map(l => new Date(l.data).getUTCFullYear());
+      .map(l => l.data || l.dataEnvio)
+      .filter(Boolean)
+      .map(d => new Date(d).getUTCFullYear());
 
     const anosUnicos = [...new Set(todasDatas)];
     return anosUnicos.sort((a, b) => b - a);
@@ -120,7 +130,7 @@ function RelatorioMensal() {
 
   const receitasFiltradas = obterDadosFiltrados(receitas);
   const despesasFiltradas = obterDadosFiltrados(despesas);
-  const aportesFiltrados = obterDadosFiltrados(aportes);
+  const aportesFiltradas = obterDadosFiltrados(aportes);
 
   const totalReceitas = somarValores(receitasFiltradas);
   const totalDespesas = somarValores(despesasFiltradas);
@@ -181,7 +191,7 @@ function RelatorioMensal() {
 
   const labelsMetasFinanceiras = dadosMetasFinanceiras.map((m) => m.nome);
   const valorAportesPorMeta = dadosMetasFinanceiras.map((meta) => {
-    return aportesFiltrados
+    return aportesFiltradas
       .filter((aporte) => String(aporte.idMetaFinanceira || aporte.metaFinanceira?.id) === String(meta.id))
       .reduce((soma, aporte) => soma + Number(aporte.valor || 0), 0);
   });

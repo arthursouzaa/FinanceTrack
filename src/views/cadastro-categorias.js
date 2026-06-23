@@ -182,7 +182,7 @@ function CadastroCategoria() {
             <input
               className='form-control'
               value={nome}
-              placeholder="Ex: Alimentação, Salário..."
+              placeholder={tipo === 'Receita' ? 'Ex: Salário, Mesada...' : 'Ex: Aluguel, Alimentação...'}
               onChange={(e) => setNome(e.target.value)}
             />
           </FormGroup>

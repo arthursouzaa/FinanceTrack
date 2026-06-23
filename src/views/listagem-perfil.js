@@ -35,6 +35,8 @@ function ListagemPerfil() {
     const [novaSenha, setNovaSenha] = useState('');
     const [confirmarSenha, setConfirmarSenha] = useState('');
     const [carregando, setCarregando] = useState(true);
+    
+    const [dadosOriginais, setDadosOriginais] = useState(null); 
 
     async function salvar() {
         const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -57,11 +59,14 @@ function ListagemPerfil() {
 
         if (novaSenha && novaSenha.length < 6) {
             mensagemErro('A nova senha deve ter pelo menos 6 caracteres.');
+        const numerosTelefone = telefone ? telefone.replace(/\D/g, '') : '';
+        if (numerosTelefone && (numerosTelefone.length < 10 || numerosTelefone.length > 11)) {
+            mensagemErro('Por favor, insira um telefone válido com DDD (10 ou 11 dígitos).');
             return;
         }
 
         if (novaSenha && novaSenha !== confirmarSenha) {
-            mensagemErro('As senhas não coincidem');
+            mensagemErro('As senhas não coincidem.');
             return;
         }
 
@@ -71,15 +76,18 @@ function ListagemPerfil() {
         }
 
         if (!idParaCarregar) {
-            mensagemErro('Não foi possível identificar o usuário logado');
+            mensagemErro('Não foi possível identificar o usuário logado.');
             return;
         }
 
+        const ehAdminOriginalmente = dadosOriginais?.admin === true;
+
         const data = {
             id: idParaCarregar,
-            nome,
+            nome: nome.trim(),
             telefone,
-            email,
+            email: email.trim(),
+            admin: ehAdminOriginalmente 
         };
 
         if (novaSenha) {
@@ -89,19 +97,19 @@ function ListagemPerfil() {
 
         try {
             const response = await api.put(`/clientes/${idParaCarregar}`, data);
-            const dadosRenovados = response.data; // { id, email, token }
+            const dadosRenovados = response.data; // Espera-se que traga: id, email, admin, token
 
             localStorage.setItem('_usuario_token', dadosRenovados.token);
 
             salvarUsuarioLogado({
                 id: idParaCarregar,
-                nome,
+                nome: nome.trim(),
                 telefone,
-                email
+                email: email.trim(),
+                admin: ehAdminOriginalmente 
             });
 
             mensagemSucesso('Perfil atualizado com sucesso!');
-
             navigate('/');
         } catch (error) {
             console.error(error);
@@ -143,8 +151,10 @@ function ListagemPerfil() {
                     return;
                 }
 
+                setDadosOriginais(dados); 
+
                 setNome(dados.nome ?? '');
-                setTelefone(dados.telefone ?? '');
+                setTelefone(dados.telefone ? aplicarMascaraTelefone(dados.telefone) : '');
                 setEmail(dados.email ?? '');
                 setNovaSenha('');
                 setConfirmarSenha('');
@@ -157,6 +167,7 @@ function ListagemPerfil() {
         }
 
         carregarDados();
+        // eslint-disable-next-line
     }, [idParaCarregar]);
 
     return (
@@ -200,7 +211,7 @@ function ListagemPerfil() {
                                             value={telefone}
                                             className='form-control'
                                             placeholder='(11) 99999-8888'
-                                            onChange={(e) => setTelefone(aplicarMascaraTelefone(e.target.value))} // 📱 Máscara aqui
+                                            onChange={(e) => setTelefone(aplicarMascaraTelefone(e.target.value))}
                                         />
                                     </FormGroup>
 

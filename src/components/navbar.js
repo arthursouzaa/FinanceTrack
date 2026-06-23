@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../assets/financetrack-logo.png';
 import NavbarItem from './navbarItem';
 import NavbarDropdown from './navbarDropdown';
+import { obterUsuarioLogado } from '../utils/usuarioLogado';
 
 function Navbar(props) {
   const navigate = useNavigate();
+
+  const usuarioLogado = obterUsuarioLogado();
+  const isAdmin = usuarioLogado && usuarioLogado.admin === true;
 
   const handleLogout = () => {
     window.localStorage.clear();
@@ -18,14 +22,14 @@ function Navbar(props) {
         <a href='/' className='navbar-brand'>
           <img src={logo} alt="FinanceTrack" style={{ maxWidth: '100px', height: '50%' }} />
         </a>
-        
-        <button 
-          className="navbar-toggler" 
-          type="button" 
-          data-bs-toggle="collapse" 
-          data-bs-target="#navbarResponsive" 
-          aria-controls="navbarResponsive" 
-          aria-expanded="false" 
+
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
           aria-label="Toggle navigation"
         >
           <span className='navbar-toggler-icon'></span>
@@ -33,28 +37,50 @@ function Navbar(props) {
 
         <div className='collapse navbar-collapse' id='navbarResponsive'>
           <ul className='navbar-nav me-auto'>
+
             <NavbarItem
               render='true'
               href='/'
               label='Início'
               icon='bi bi-house'
             />
-            
-            <NavbarItem
+
+            <NavbarDropdown
               render='true'
-              href='/listagem-lancamentos'
+              href='#'
               label='Lançamentos'
-              icon='bi bi-wallet2'
+
+              links={[
+                {
+                  href: "/listagem-lancamentos",
+                  label: "Lançamentos"
+                },
+                {
+                  href: "/listagem-categorias",
+                  label: "Categorias"
+                },
+                {
+                  href: "/listagem-formasPagamento",
+                  label: "Formas de Pagamento"
+                },
+              ]}
+              icon="bi bi-wallet2"
             />
 
             <NavbarDropdown
               render='true'
               href='#'
               label='Objetivos'
-              link1='/listagem-metas'
-              link1label='Metas'
-              link2='/listagem-aportes'
-              link2label='Aportes'
+              links={[
+                {
+                  href: "/listagem-metas",
+                  label: "Metas"
+                },
+                {
+                  href: "/listagem-aportes",
+                  label: "Aportes"
+                }
+              ]}
               icon="bi bi-cash-coin"
             />
 
@@ -69,17 +95,30 @@ function Navbar(props) {
               render='true'
               href='#'
               label='Relatórios'
-              link1='/relatorio-mensal'
-              link1label='Relatório Mensal'
-              link2='/relatorio-anual'
-              link2label='Relatório Anual'
+              links={[
+                {
+                  href: "/relatorio-mensal",
+                  label: "Relatório Mensal"
+                },
+                {
+                  href: "/relatorio-anual",
+                  label: "Relatório Anual"
+                },
+                ...(isAdmin ? [{ href: "/relatorio-admin", label: "Relatório Administrativo" }] : [])
+              ]}
               icon='bi bi-bank'
             />
+          {isAdmin && (
+            <NavbarItem
+              render='true'
+              href='/listagem-clientes'
+              label='Clientes'
+              icon='bi bi-people'
+            />
+          )}
           </ul>
 
-          {/* Menu Alinhado à Direita: Perfil e Logout */}
           <ul className='navbar-nav ms-auto align-items-lg-center'>
-            {/* ADICIONADO: Link direto para a listagem/edição do perfil logado */}
             <NavbarItem
               render='true'
               href='/listagem-perfil'

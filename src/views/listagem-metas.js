@@ -51,7 +51,7 @@ function ListagemMetas() {
     }
   }
 
-  useEffect(() => {
+useEffect(() => {
     async function carregarDadosMetas() {
       try {
         const [metasRes, aportesRes] = await Promise.all([
@@ -59,8 +59,17 @@ function ListagemMetas() {
           api.get('/aportes')
         ]);
 
-        setDados(filtrarRegistrosDoUsuario(metasRes.data));
-        setDadosAportes(filtrarRegistrosDoUsuario(aportesRes.data));
+        const metasDoUsuario = filtrarRegistrosDoUsuario(metasRes.data || []);
+        setDados(metasDoUsuario);
+
+        const idsMetasDoUsuario = new Set(metasDoUsuario.map(meta => String(meta.id)));
+
+        const aportesBrutos = aportesRes.data || [];
+        const aportesFiltrados = aportesBrutos.filter(aporte => 
+          idsMetasDoUsuario.has(String(aporte.idMetaFinanceira))
+        );
+
+        setDadosAportes(aportesFiltrados);
       } catch (error) {
         console.error('Erro ao buscar dados de metas:', error);
         mensagemErro('Erro ao carregar a listagem de metas.');
@@ -80,7 +89,10 @@ function ListagemMetas() {
       return Number.isFinite(n) ? n : 0;
     };
 
-    const aportes = (dadosAportes || []).filter((a) => a.idMetaFinanceira === meta.id);
+    const aportes = (dadosAportes || []).filter(
+      (a) => String(a.idMetaFinanceira || a.metaFinanceira?.id) === String(meta.id)
+    );
+    
     const totalAportes = aportes.reduce((sum, a) => sum + toNumber(a.valor), 0);
 
     return totalAportes + toNumber(meta.investimentoInicial);
@@ -222,7 +234,7 @@ function ListagemMetas() {
                             </IconButton>
                             <IconButton
                               aria-label='delete'
-                              onClick={() => window.confirm("Você realmente deseja excluir esta meta?") && excluir(dado.id)}
+                              onClick={() => window.confirm("Tem certeza de que deseja excluir? Isso apagará os registros relacionados, como os aportes.") && excluir(dado.id)}
                             >
                               <DeleteIcon />
                             </IconButton>
