@@ -27,7 +27,7 @@ button {
   text-transform: uppercase;
 }
 
-.card-header>i {
+.card-header > i {
   padding-right: 0.7rem;
 }
 
@@ -70,4 +70,249 @@ button {
 .label-filtro {
   font-weight: bold;
   color: #9329ed;
+}
+
+/* TELA DE CADASTRO DE CLIENTE */
+
+body:has(.cadastro-cliente-container) {
+  overflow: hidden;
+  background-color: #4b0082;
+}
+
+body:has(.cadastro-cliente-container) #root {
+  padding: 0 !important;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.cadastro-cliente-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #4b0082;
+  overflow: hidden;
+}
+
+.cadastro-cliente-card-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 820px;
+  max-width: 90vw;
+  transform: translate(-50%, -50%);
+}
+
+.cadastro-cliente-container .card {
+  width: 100%;
+  max-width: 820px;
+  max-height: 92vh;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0;
+}
+
+.cadastro-cliente-container .card-body {
+  padding: 16px 28px 18px 28px;
+}
+
+.cadastro-cliente-topo {
+  margin-bottom: 12px;
+}
+
+.cadastro-cliente-logo {
+  max-width: 155px;
+  margin-bottom: 6px;
+}
+
+.cadastro-cliente-subtitulo {
+  color: #6c757d;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.cadastro-cliente-formulario {
+  width: 100%;
+  margin: 0;
+}
+
+.cadastro-cliente-formulario .col-md-6,
+.cadastro-cliente-formulario .col-12 {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.cadastro-cliente-container .form-group {
+  margin-bottom: 7px;
+}
+
+.cadastro-cliente-container label {
+  margin-bottom: 3px;
+  font-size: 14px;
+}
+
+.cadastro-cliente-container .form-control {
+  height: 38px;
+  font-size: 14px;
+}
+
+.cadastro-cliente-requisitos {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 6px 0 8px 0;
+  background-color: #f8f9fa;
+}
+
+.cadastro-cliente-requisitos p {
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.cadastro-cliente-requisitos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 16px;
+}
+
+.cadastro-cliente-requisitos span {
+  display: block;
+  font-size: 13px;
+}
+
+.requisito-ok {
+  color: #198754;
+  font-weight: 600;
+}
+
+.requisito-pendente {
+  color: #6c757d;
+}
+
+.cadastro-cliente-botao {
+  height: 38px;
+  padding: 7px;
+  font-weight: 700;
+  margin-top: 0;
+}
+
+.cadastro-cliente-login {
+  text-align: center;
+  margin-top: 12px;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.cadastro-cliente-login span {
+  color: #198754;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.cadastro-cliente-login span:hover {
+  color: #146c43;
+  text-decoration: underline;
+}
+
+/* TELA DE LOGIN */
+
+body:has(.login-container) {
+  overflow: hidden;
+  background-color: #4b0082;
+}
+
+body:has(.login-container) #root {
+  padding: 0 !important;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.login-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #4b0082;
+  overflow: hidden;
+}
+
+.login-card-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 500px;
+  max-width: 90vw;
+  transform: translate(-50%, -50%);
+}
+
+.login-container .card {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0;
+}
+
+.login-container .card-body {
+  padding: 22px 28px 24px 28px;
+}
+
+.login-topo {
+  margin-bottom: 18px;
+}
+
+.login-logo {
+  max-width: 155px;
+  margin-bottom: 8px;
+}
+
+.login-subtitulo {
+  color: #6c757d;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.login-container .form-group {
+  margin-bottom: 12px;
+}
+
+.login-container label {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.login-container .form-control {
+  height: 40px;
+  font-size: 14px;
+}
+
+.login-botao {
+  height: 40px;
+  padding: 8px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.login-cadastro {
+  text-align: center;
+  margin-top: 14px;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.login-cadastro span {
+  color: #198754;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.login-cadastro span:hover {
+  color: #146c43;
+  text-decoration: underline;
 }

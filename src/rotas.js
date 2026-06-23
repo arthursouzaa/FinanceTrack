@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 import Home from './views/home';
 import Login from './views/login';
+import CadastroCliente from './views/cadastro-cliente';
 
 import CadastroMetas from './views/cadastro-metas';
 import CadastroAportes from './views/cadastro-aportes';
@@ -34,6 +35,8 @@ import Navbar from './components/navbar';
 
 function RotasInternas() {
   const location = useLocation();
+  
+  const mostrarNavbar = location.pathname !== '/login' && location.pathname !== '/cadastro-cliente';
 
   const mostrarNavbar = location.pathname !== '/login';
 
@@ -41,6 +44,7 @@ function RotasInternas() {
     <>
       <Routes>
         <Route path='/login' element={<Login />} />
+        <Route path='/cadastro-cliente' element={<CadastroCliente />} />
         <Route path='/' element={<RotaProtegida element={<Home />} />} />
         <Route path='/acesso-negado' element={<RotaProtegida element={<AcessoNegado />} />} />
 

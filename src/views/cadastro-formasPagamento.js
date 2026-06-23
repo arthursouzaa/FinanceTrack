@@ -33,9 +33,14 @@ function CadastroFormaPagamento() {
   }
 
   async function salvar() {
-    if (!nome.trim()) {
-      mensagemErro('Por favor, preencha o campo obrigatório (*)');
-      return;
+    if (!nome || nome.trim() === '') {
+        mensagemErro('Por favor, preencha o campo obrigatório: Nome (*)');
+        return;
+    }
+
+    if (nome.trim().length < 3) {
+        mensagemErro('O nome da forma de pagamento deve ter pelo menos 3 caracteres.');
+        return;
     }
 
     const idUsuarioLogado = obterIdUsuarioLogado();

@@ -39,11 +39,26 @@ function ListagemPerfil() {
     const [dadosOriginais, setDadosOriginais] = useState(null); 
 
     async function salvar() {
-        if (!nome || !email) {
+        const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const telefoneSomenteNumeros = telefone.replace(/\D/g, '');
+
+        if (!nome || nome.trim() === '' || !email || email.trim() === '') {
             mensagemErro('Os campos Nome e E-mail são obrigatórios.');
             return;
         }
 
+        if (!emailValido.test(email)) {
+            mensagemErro('Informe um e-mail válido.');
+            return;
+        }
+
+        if (telefone && telefoneSomenteNumeros.length !== 10 && telefoneSomenteNumeros.length !== 11) {
+            mensagemErro('Informe um telefone válido com DDD.');
+            return;
+        }
+
+        if (novaSenha && novaSenha.length < 6) {
+            mensagemErro('A nova senha deve ter pelo menos 6 caracteres.');
         const numerosTelefone = telefone ? telefone.replace(/\D/g, '') : '';
         if (numerosTelefone && (numerosTelefone.length < 10 || numerosTelefone.length > 11)) {
             mensagemErro('Por favor, insira um telefone válido com DDD (10 ou 11 dígitos).');
@@ -52,6 +67,11 @@ function ListagemPerfil() {
 
         if (novaSenha && novaSenha !== confirmarSenha) {
             mensagemErro('As senhas não coincidem.');
+            return;
+        }
+
+        if (!novaSenha && confirmarSenha) {
+            mensagemErro('Informe a nova senha antes de confirmar.');
             return;
         }
 

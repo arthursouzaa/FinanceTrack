@@ -53,6 +53,11 @@ function CadastroCategoria() {
       return;
     }
 
+    if (nome.trim().length < 3) {
+      mensagemErro('O nome da categoria deve ter pelo menos 3 caracteres.');
+      return;
+    }
+
     if (tipo === 'Despesa' && limiteGasto && (!valorLimite || Number(valorLimite) <= 0)) {
       mensagemErro('Por favor, preencha um valor limite maior que zero (*)');
       return;
