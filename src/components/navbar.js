@@ -104,7 +104,7 @@ function Navbar(props) {
                   href: "/relatorio-anual",
                   label: "Relatório Anual"
                 },
-
+                ...(isAdmin ? [{ href: "/relatorio-admin", label: "Relatório Administrativo" }] : [])
               ]}
               icon='bi bi-bank'
             />

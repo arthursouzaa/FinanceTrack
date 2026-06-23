@@ -140,7 +140,7 @@ function ListagemAportes() {
                             ? Number(dado.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                             : '—'}
                         </td>
-                        <td>{formatarDataParaExibicao(dado.data)}</td>
+                        <td>{formatarDataParaExibicao(dado.dataEnvio)}</td>
                         <td>
                           <Stack spacing={1} padding={0} direction='row'>
                             <IconButton aria-label='edit' onClick={() => editar(dado)}>

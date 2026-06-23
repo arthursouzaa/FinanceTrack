@@ -22,6 +22,7 @@ import ListagemClientes from './views/listagem-clientes';
 
 import RelatorioMensal from './views/relatorio-mensal';
 import RelatorioAnual from './views/relatorio-anual';
+import RelatorioAdmin from './views/relatorio-admin';
 
 import AcessoNegado from './views/acesso-negado';
 import NaoEncontrado from './views/nao-encontrado';
@@ -61,7 +62,8 @@ function RotasInternas() {
 
         <Route path='/relatorio-mensal' element={<RotaProtegida element={<RelatorioMensal />} />} />
         <Route path='/relatorio-anual' element={<RotaProtegida element={<RelatorioAnual />} />} />
-      
+        <Route path='/relatorio-admin' element={<RotaAdmin element={<RelatorioAdmin />} />} />
+
         {/* ÚLTIMA ROTA DA LISTA: deve estar sempre no final */}
         <Route path='*' element={<RotaProtegida element={<NaoEncontrado />} />} />
       </Routes>
