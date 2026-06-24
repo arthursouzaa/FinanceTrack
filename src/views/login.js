@@ -32,19 +32,23 @@ function Login() {
 
     axios
       .post(`${BASE_URL}/clientes/auth`, {
-          email: email.trim(),
-          senha
+        email: email.trim(),
+        senha
       })
-      .post(`${BASE_URL}/clientes/auth`, { email, senha })
       .then((response) => {
         const dadosAutenticacao = response.data;
 
         if (dadosAutenticacao.token) {
-          localStorage.setItem('_financetrack_token', dadosAutenticacao.token);
+          localStorage.setItem(
+            '_financetrack_token',
+            dadosAutenticacao.token
+          );
+
           salvarUsuarioLogado(dadosAutenticacao);
-          // mensagemSucesso(`Bem-vindo, ${dadosAutenticacao.nome || 'Usuário'}!`);
-          mensagemSucesso(`Seja bem-vindo(a) ao FinanceTrack!`);
-          navigate('/');
+
+          mensagemSucesso('Seja bem-vindo(a) ao FinanceTrack!');
+
+          navigate('/home'); // ou '/' se sua home continuar nessa rota
         } else {
           mensagemErro('Erro inesperado na resposta do servidor.');
         }
@@ -52,7 +56,11 @@ function Login() {
       .catch((error) => {
         console.error('Erro ao fazer login:', error);
 
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        if (
+          error.response &&
+          (error.response.status === 401 ||
+            error.response.status === 403)
+        ) {
           mensagemErro('E-mail ou senha incorretos.');
         } else {
           mensagemErro('Erro ao tentar se conectar ao servidor.');
@@ -119,12 +127,12 @@ function Login() {
             {carregando ? 'Autenticando...' : 'Login'}
           </button>
 
-          <div className="login-cadastro">
+          {/* <div className="login-cadastro">
             Não possui uma conta?{' '}
             <span onClick={() => navigate('/cadastro-cliente')}>
               CADASTRE-SE
             </span>
-          </div>
+          </div> */}
         </Card>
       </div>
     </div>

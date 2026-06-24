@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 
 import Home from './views/home';
 import Login from './views/login';
@@ -35,17 +35,18 @@ import Navbar from './components/navbar';
 
 function RotasInternas() {
   const location = useLocation();
-  
-  const mostrarNavbar = location.pathname !== '/login' && location.pathname !== '/cadastro-cliente';
 
-  const mostrarNavbar = location.pathname !== '/login';
+  const rotasSemNavbar = ['/', '/login', '/cadastro-cliente'];
+  const mostrarNavbar = !rotasSemNavbar.includes(location.pathname);
 
   return (
     <>
       <Routes>
+        <Route path='/' element={<Navigate to='/login' replace />} />
         <Route path='/login' element={<Login />} />
         <Route path='/cadastro-cliente' element={<CadastroCliente />} />
-        <Route path='/' element={<RotaProtegida element={<Home />} />} />
+
+        <Route path='/home' element={<RotaProtegida element={<Home />} />} />
         <Route path='/acesso-negado' element={<RotaProtegida element={<AcessoNegado />} />} />
 
         <Route path='/cadastro-metas/:idParam?' element={<RotaProtegida element={<CadastroMetas />} />} />
@@ -68,15 +69,15 @@ function RotasInternas() {
         <Route path='/relatorio-anual' element={<RotaProtegida element={<RelatorioAnual />} />} />
         <Route path='/relatorio-admin' element={<RotaAdmin element={<RelatorioAdmin />} />} />
 
-        {/* ÚLTIMA ROTA DA LISTA: deve estar sempre no final */}
         <Route path='*' element={<RotaProtegida element={<NaoEncontrado />} />} />
       </Routes>
+
       {mostrarNavbar && <Navbar />}
     </>
   );
 }
 
-function Rotas(props) {
+function Rotas() {
   return (
     <BrowserRouter>
       <RotasInternas />

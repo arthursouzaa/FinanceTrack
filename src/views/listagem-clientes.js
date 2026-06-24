@@ -105,7 +105,7 @@ function ListagemClientes() {
           <h4 className="alert-heading">Acesso Restrito!</h4>
           <p>Você não possui privilégios de administrador para visualizar esta listagem.</p>
           <hr />
-          <button onClick={() => navigate('/')} className="btn btn-outline-danger">
+            <button onClick={() => navigate('/home')} className="btn btn-outline-danger">
             Voltar para o Início
           </button>
         </div>

@@ -19,7 +19,7 @@ function Navbar(props) {
   return (
     <div className='navbar navbar-expand-lg fixed-top navbar-dark bg-primary p-1' style={{ userSelect: 'none' }}>
       <div className='container-fluid'>
-        <a href='/' className='navbar-brand'>
+        <a href='/home' className='navbar-brand'>
           <img src={logo} alt="FinanceTrack" style={{ maxWidth: '100px', height: '50%' }} />
         </a>
 
@@ -40,7 +40,7 @@ function Navbar(props) {
 
             <NavbarItem
               render='true'
-              href='/'
+              href='/home'
               label='Início'
               icon='bi bi-house'
             />

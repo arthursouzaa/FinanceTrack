@@ -103,28 +103,30 @@ function CadastroCliente() {
 
     axios.post(`${BASE_URL}/clientes`, cliente)
       .then(() => {
-        return axios.post(`${BASE_URL}/clientes/login`, {
-            email: email.trim(),
-            senha: senha
+        return axios.post(`${BASE_URL}/clientes/auth`, {
+          email: email.trim(),
+          senha
         });
       })
-        .then((response) => {
+      .then((response) => {
         const dadosAutenticacao = response.data;
 
         if (dadosAutenticacao.token) {
-            localStorage.setItem('_financetrack_token', dadosAutenticacao.token);
-            salvarUsuarioLogado(dadosAutenticacao);
-            mensagemSucesso(`Bem-vindo, ${dadosAutenticacao.nome || 'Usuário'}!`);
-            navigate('/');
+          localStorage.setItem('_financetrack_token', dadosAutenticacao.token);
+          salvarUsuarioLogado(dadosAutenticacao);
+          mensagemSucesso('Conta criada com sucesso!');
+          navigate('/home');
         } else {
-            mensagemErro('Erro inesperado na resposta do servidor.');
+          mensagemErro('Erro inesperado na resposta do servidor.');
         }
       })
       .catch((error) => {
-        console.error('Erro ao cadastrar cliente:', error);
+        console.error('Erro ao cadastrar cliente:', error.response?.data || error);
 
-        if (error.response && error.response.data && error.response.data.message) {
+        if (error.response?.data?.message) {
           mensagemErro(error.response.data.message);
+        } else if (typeof error.response?.data === 'string' && error.response.data.trim() !== '') {
+          mensagemErro(error.response.data);
         } else {
           mensagemErro('Erro ao criar conta. Verifique os dados informados.');
         }

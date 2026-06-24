@@ -14,7 +14,7 @@ function AcessoNegado() {
             Você não tem permissão para acessar esta página.
           </p>
           <button 
-            onClick={() => navigate('/')} 
+            onClick={() => navigate('/home')} 
             className="btn btn-primary mt-4"
           >
             <i className="bi bi-house me-2"></i>
