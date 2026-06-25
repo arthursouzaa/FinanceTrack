@@ -127,12 +127,12 @@ function Login() {
             {carregando ? 'Autenticando...' : 'Login'}
           </button>
 
-          {/* <div className="login-cadastro">
+          <div className="login-cadastro">
             Não possui uma conta?{' '}
             <span onClick={() => navigate('/cadastro-cliente')}>
               CADASTRE-SE
             </span>
-          </div> */}
+          </div>
         </Card>
       </div>
     </div>
