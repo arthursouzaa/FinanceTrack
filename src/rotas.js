@@ -44,7 +44,7 @@ function RotasInternas() {
       <Routes>
         <Route path='/' element={<Navigate to='/login' replace />} />
         <Route path='/login' element={<Login />} />
-        <Route path='/cadastro-cliente' element={<CadastroCliente />} />
+        {/* <Route path='/cadastro-cliente' element={<CadastroCliente />} /> */}
 
         <Route path='/home' element={<RotaProtegida element={<Home />} />} />
         <Route path='/acesso-negado' element={<RotaProtegida element={<AcessoNegado />} />} />
